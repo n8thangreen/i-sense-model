@@ -3,124 +3,123 @@
 # N Green
 # 21/2/2017
 #
-# cost-effectiveness analysis
+# cost-effectiveness model
 
 
-# unit costs
-
-c_obtain <- 1
-c_NPFS <- 1
-c_GP <- 1
-c_hosp <- 1
-
-
-# probabilities
-
-p_prescribe <- 0.7
-p_obtainNPFS <- 0.9
-p_obtainGP <- 0.9
-p_take <- 0.9
-p_complete <- 0.9
-p_GPpos <- 0.7
-p_NPFSpos <- 0.8
-p_NPFS1 <- 0.1
-p_NPFS2 <- 0.01
-p_GP1 <- 0.05
-p_GP2 <- 0.02
-p_hosp <- 0.001
+p_H1N1 = 0.5
+p_GPdiag = 0.5
+p_NPFSauth = 0.5
+p_obtain = 0.5
+p_hosp_dropout = 0.5
+p_start = 0.5
+p_complete = 0.5
+p_hosp_complete = 0.5
+p_hosp_dropout.notH1N1 = 0.5
+p_hosp_complete.notH1N1 = 0.5
+spec_NPFS = 1
+sens_NPFS = 1
+spec_GP = 1
+sens_GP = 1
+c_NPFS = 1
+c_GP = 1
+C_obtain = 1
+c_hosp = 1
+c_PCT.NPFS = 0
+c_PCT.GP = 0
 
 
 # novel test
 
-c_POCtest <- 1
+## unit cost
+c_PCT.GP <- seq(0, 100, by = 1)
+c_PCT.NPFS <- seq(0, 100, by = 1)
 
 ## sensitivity
-p_POCsens <- seq(0, 1, by = 0.1)
+sens_GP <- seq(0, 1, by = 0.1)
+sens_NPFS <- seq(0, 1, by = 0.1)
 
 ## specificity
-p_POCspec <- seq(0, 1, by = 0.1)
+spec_GP <- seq(0, 1, by = 0.1)
+spec_NPFS <- seq(0, 1, by = 0.1)
 
 
 # expected costs ----------------------------------------------------------
 
-Ec_flu <- function(c_obtain = 1,
-                   c_NPFS = 1,
-                   c_GP = 1,
-                   c_hosp = 1,
-                   p_prescribe = 0.7,
-                   p_obtainNCSP = 0.9,
-                   p_obtainGP = 0.9,
-                   p_take = 0.9,
-                   p_complete = 0.9,
-                   p_GPpos = 0.7,
-                   p_NPFSpos = 0.8,
-                   p_NPFS1 = 0.1,
-                   p_NPFS2 = 0.01,
-                   p_GP1 = 0.05,
-                   p_GP2 = 0.02,
-                   p_hosp = 0.001){
+Ec_ILI <-  function(p_H1N1 = 0.5,
+                    p_GPdiag = 0.5,
+                    p_NPFSauth = 0.5,
+                    p_obtain = 0.5,
+                    p_hosp_dropout = 0.5,
+                    p_start = 0.5,
+                    p_complete = 0.5,
+                    p_hosp_complete = 0.5,
+                    p_hosp_dropout.notH1N1 = 0.5,
+                    p_hosp_complete.notH1N1 = 0.5,
+                    spec_NPFS = 1,
+                    sens_NPFS = 1,
+                    spec_GP = 1,
+                    sens_GP = 1,
+                    c_NPFS = 1,
+                    c_GP = 1,
+                    c_obtain = ,
+                    c_hosp = ,
+                    c_PCT.NPFS = 0,
+                    c_PCT.GP = 0){
 
-  Ec_hosp <- c_hosp*p_hosp
+  Ec_start.notH1N1 <- p_complete*p_hosp_complete.notH1N1*c_hosp + (1 - p_complete)*p_hosp_dropout.notH1N1*c_hosp
+  Ec_start <- p_complete*p_hosp_complete*c_hosp + (1 - p_complete)*p_hosp_dropout*c_hosp
 
-  # treatment
-  # assume the same pathway whether prescribed through GP or NPFS
-  Ec_obtain <- c_obtain + Ec_hosp*(1-p_complete)*p_take + (1-p_take)*Ec_hosp
+  Ec_obtain <- p_start*Ec_start + (1 - p_start)*p_hosp_dropout*c_hosp
+  Ec_obtain.notH1N1 <- p_start*Ec_start.notH1N1 + (1 - p_start)*p_hosp_dropout.notH1N1*c_hosp
 
-  Ec_posTestNPFS <- Ec_obtain*p_obtainNPFS + (1-p_obtainNPFS)*Ec_hosp
-  Ec_posTestGP <- Ec_obtain*p_obtainGP + (1-p_obtainGP)*Ec_hosp
+  Ec_Tx.notH1N1 <- p_obtain*(c_obtain + Ec_obtain.notH1N1) + (1 - p_obtain)*p_hosp_dropout.notH1N1*c_hosp
+  Ec_Tx <- p_obtain*(c_obtain + Ec_obtain) + (1 - p_obtain)*p_hosp_dropout*c_hosp
 
-  # visit NPFS first
-  Ec_GP2 <- c_GP + p_GPpos*p_prescribe*Ec_posTestGP + Ec_hosp*(p_GPpos*(1-p_prescribe) + (1-p_GPpos))
+  Ec_NPFS.notH1N1 <- c_NPFS + c_PCT.NPFS + (1 - spec_NPFS)*Ec_Tx.notH1N1
+  Ec_NPFS <- c_NPFS + c_PCT.NPFS + sens_NPFS*Ec_Tx
 
-  Ec_NPFS1neg <- Ec_GP2*p_GP2 + (1-p_GP2)*Ec_hosp
+  Ec_GP.notH1N1 <- c_GP + c_PCT.GP + (1 - spec_GP)*Ec_Tx
+  Ec_GP <- c_GP + c_PCT.GP + sens_GP*Ec_Tx
 
-  Ec_NPFS1 <- c_NPFS + p_NPFSpos*Ec_posTestNPFS + (1-p_NPFSpos)*Ec_NPFS1neg
+  Ec_notH1N1 <- p_GPdiag*Ec_GP.notH1N1 + p_NPFSauth*Ec_NPFS.notH1N1
+  Ec_H1N1 <- p_GPdiag*Ec_GP + p_NPFSauth*Ec_NPFS
 
-  # assume all GPpos not prescibed go to NPFS
-  Ec_GP1pos <- (1-p_prescibe)*(c_NPFS + Ec_hosp*(1-p_NPFSpos) + p_NPFSpos*Ec_posTestNPFS) + p_prescribe*Ec_posTestGP
-
-  Ec_NPFS2 <- c_NPFS + Ec_hosp*(1-p_NPFSpos) + p_NPFSpos*Ec_posTestNPFS
-
-  Ec_GP1neg <- Ec_NPFS2*p_NPFS2 + (1-p_NPFS2)*Ec_hosp
-
-  # visit GP first
-  Ec_GP1 <- c_GP + p_GPpos*Ec_GP1pos + (1-p_GPpos)*Ec_GP1neg
-
-  p_NPFS1*Ec_NPFS1 + p_GP1*Ec_GP1
+  return(p_H1N1 * Ec_H1N1 + (1 - p_H1N1) * Ec_notH1N1)
 }
+
 
 
 # scenarios ---------------------------------------------------------------
 
-# scenario 1 (PoC test @ GP):
+# scenario 1 (PCT test @ GP):
 
-Ec_flu(p_GPpos = p_POCsens,
-       c_GP = c_GP + c_POCtest) ##TODO: is this additional to current cost?
+Ec_ILI(p_GPpos = p_PCTsens,
+       c_GP = c_GP + c_PCTtest)
 
 # scenario 2a (NPFS pos 2-step):
 
-Ec_flu(p_NPFSpos = p_NPFSpos*p_POCsens,
-       c_NPFS = c_NPFS + c_POCtest)
+Ec_ILI(p_NPFSpos = p_NPFSpos*p_PCTsens,
+       c_NPFS = c_NPFS + c_PCTtest)
 
 # scenario 2b (obtain Rx increase):
 
-Ec_flu(p_obtainNCSP = p_obtainNCSP*2,
-       p_NPFSpos = p_POCsens,          ##TODO: does the POC test replace the NPFS algorithm?
-       c_NPFS = c_NPFS + c_POCtest)
+Ec_ILI(p_obtainNCSP = p_obtainNCSP*2,
+       p_NPFSpos = p_PCTsens,
+       c_NPFS = c_NPFS + c_PCTtest)
 
 # scenario 2c (switch from GP to NPFS):
 ## assume 1/2 switch
 
-Ec_flu(p_GP1 = p_GP1/2,
+Ec_ILI(p_GP1 = p_GP1/2,
        p_NPFS1 = p_NPFS1 + p_GP1/2,
-       p_NPFSpos = p_POCsens,          ##TODO: does the POC test replace the NPFS algorithm?
-       c_NPFS = c_NPFS + c_POCtest)
+       p_NPFSpos = p_PCTsens,
+       c_NPFS = c_NPFS + c_PCTtest)
 
 # scenario 2d (NPFS use increase):
 ## assume same prop who already seek care
 
-Ec_flu(p_NPFS1 = 2*p_NPFS1 + p_GP1,
-       p_NPFSpos = p_POCsens,          ##TODO: does the POC test replace the NPFS algorithm?
-       c_NPFS = c_NPFS + c_POCtest)
+Ec_ILI(p_NPFS1 = 2*p_NPFS1 + p_GP1,
+       p_NPFSpos = p_PCTsens,
+       c_NPFS = c_NPFS + c_PCTtest)
 
 
