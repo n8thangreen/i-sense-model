@@ -7,6 +7,7 @@
 
 
 library(dplyr)
+library(tidyr)
 
 
 # read data
@@ -16,6 +17,9 @@ load(file = "C:/Users/Nathan/Dropbox/i-sense/R/Ilarias-model/H1N1model/data clea
 load(file = "C:/Users/Nathan/Dropbox/i-sense/R/Ilarias-model/H1N1model/data cleaned/ILI_diag_long.RData")
 load(file = "C:/Users/Nathan/Dropbox/i-sense/R/Qsurveillance-GP/data/Qsurveillance.RData")
 load(file = "C:/Users/Nathan/Dropbox/i-sense/R/NPFS_access-auth-coll/data cleaned/dat.npfs.RData")
+load(file = "C:/Users/Nathan/Dropbox/i-sense/R/user-survey/data cleaned/usersurvey.RData")
+load(file = "C:/Users/Nathan/Dropbox/i-sense/data cleaned/data_positiveILI_GP_perrine_feb2017.RData")
+load(file = "C:/Users/Nathan/Dropbox/i-sense/data cleaned/data_positiveILI_NPFS_perrine_feb2017.RData")
 
 
 ## are the start and end dates the same for all data sets?
@@ -26,11 +30,20 @@ load(file = "C:/Users/Nathan/Dropbox/i-sense/R/NPFS_access-auth-coll/data cleane
 # H1N1_long <- filter(H1N1_long, week >= 18, week <= 57)
 # ILI_diag_long <- filter(ILI_diag_long, week >= 18, week <= 57)
 
-GP_swab_neg <- 1
-GP_swab_pos <- 1
-NPFS_swab_pos <- 1
-NPFS_swab_neg <- 1
-NPFS_swab <- 2
+
+# swabbing positivity/negativity ------------------------------------------
+
+GP_swab_pos <- dat.posILI.GP %>%
+  group_by(NPFS_weeks_window, age) %>%
+  dplyr::summarise(posILI = sum(posILI),
+                   estim.consult = sum(estim.consult)) %>%
+  mutate(GP_swab_pos = posILI/estim.consult)
+
+NPFS_swab_pos <- dat.posILI.NPFS %>%
+  group_by(NPFS_weeks_window, age) %>%
+  dplyr::summarise(posILI = sum(posILI),
+                   authorisations = sum(authorisations)) %>%
+  mutate(NPFS_swab_pos = posILI/authorisations)
 
 
 #  ------------------------------------------------------------------------
@@ -39,66 +52,64 @@ NPFS_swab <- 2
 
 # number ILI in England by time windows -----------------------------------
 
-num_ILI_England_windows <- filter(ILI_2009_2011_long, age == "overall") %>%
-                            group_by(NPFS_weeks_window) %>%
-                            dplyr::summarise(num_ILI_windows = sum(ILI_England))
+ILI <- ILI_2009_2011_long %>%
+            group_by(NPFS_weeks_window, age) %>%
+            dplyr::summarise(ILI = sum(ILI_England))
 
 
 # number ILI H1N1 to GP ---------------------------------------------------
 
-num_ILI_H1N1_GP_windows <- filter(ILI_diag_long, age == "overall") %>%
-                            group_by(NPFS_weeks_window) %>%
-                            dplyr::summarise(num_ILI_H1N1_GP_windows = sum(num_ILI_H1N1_GP))
+H1N1_GP <- ILI_diag_long %>%
+                        group_by(NPFS_weeks_window, age) %>%
+                        dplyr::summarise(H1N1_GP = sum(num_ILI_H1N1_GP))
 
 
 # number authorised ILI NPFS ------------------------------------------------
 
-num_auth_NPFS_windows <- filter(dat.npfs, age == "total") %>%
-                          group_by(NPFS_weeks_window) %>%
-                          dplyr::summarise(num_auth_NPFS_windows = sum(auth))
+auth_NPFS <- dat.npfs %>%
+                      group_by(NPFS_weeks_window, age) %>%
+                      dplyr::summarise(auth_NPFS = sum(auth))
 
 
-# number ILI not H1N1 to GP ------------------------------------------------
+num_dat <- merge(ILI,
+                  H1N1_GP) %>%
+                  merge(auth_NPFS) %>%
+                  merge(GP_swab_pos) %>%
+                  merge(NPFS_swab_pos)
 
-num_ILI_notH1N1_GP_windows <- num_ILI_H1N1_GP_windows * GP_swab_neg/GP_swab_pos
-
-
-# number auth ILI H1N1 NPFS -----------------------------------------------
-
-num_ILI_H1N1_NPFS_windows <- num_auth_NPFS_windows * NPFS_swab_pos/NPFS_swab
-
-
-# number auth ILI not H1N1 NPFS -------------------------------------------
-
-num_ILI_notH1N1_NPFS_windows <- num_auth_NPFS_windows * NPFS_swab_neg/NPFS_swab
-
-
-#  ------------------------------------------------------------------------
-#  probabilities
-#  ------------------------------------------------------------------------
-
-# ILI in England by time windows ------------------------------------------
-
-# p_ILI_England_windows <- num_ILI_England_windows/num_England
-
-
-# ILI H1N1 to GP ----------------------------------------------------------
-
-p_ILI_H1N1_GP_windows <- num_ILI_H1N1_GP_windows/num_ILI_England_windows
-
-
-# authorised ILI H1N1 NPFS ---------------------------------------------------
-
-p_ILI_H1N1_NPFS_windows <- num_ILI_H1N1_NPFS_windows/num_ILI_England_windows
-
-
-# authorised ILI not H1N1 NPFS -----------------------------------------------
-
-p_ILI_notH1N1_NPFS_windows <- num_ILI_notH1N1_NPFS_windows/num_ILI_England_windows
 
 
 # number ILI not H1N1 to GP ------------------------------------------------
 
-p_ILI_notH1N1_GP_windows <- num_ILI_notH1N1_GP_windows/num_ILI_England_windows
+num_dat <- num_dat %>%
+  mutate(notH1N1_GP = H1N1_GP * (1 - GP_swab_pos)/GP_swab_pos,
+         H1N1_NPFS = auth_NPFS * NPFS_swab_pos/authorisations,
+         notH1N1_NPFS = auth_NPFS * (1 - NPFS_swab_pos)/authorisations)
 
+
+
+#  ------------------------------------------------------------------------
+#  transition probability matrix
+#  ------------------------------------------------------------------------
+
+trans_mat_ILI <- num_dat %>% melt(id.vars = c("age", "NPFS_weeks_window"),
+                                  variable.name = "to",
+                                  value.name = "num")
+
+trans_mat_ILI <-
+  num_dat %>%
+  mutate(H1N1_GP = H1N1_GP/ILI,
+         H1N1_NPFS = H1N1_NPFS/ILI,
+         H1N1_NPFS = H1N1_NPFS/ILI,
+         notH1N1_NPFS = notH1N1_NPFS/ILI,
+         notH1N1_GP = notH1N1_GP/ILI) %>%
+  melt(id.vars = c("age", "NPFS_weeks_window"),
+       variable.name = "to",
+       value.name = "prob") %>%
+  merge(trans_mat,
+        by = c("age", "NPFS_weeks_window", "to"),
+        all.x = TRUE, all.y = FALSE) %>%
+  data.frame(from = "ILI") %>%
+  select(from, to, everything()) %>%
+  arrange(to)
 
