@@ -125,19 +125,6 @@ trans_mat_ILI <-
   select(from, to, everything()) %>%
   arrange(to)
 
-  # merge(num_ILI,
-  #       by = c("age", "NPFS_weeks_window", "to"),
-  #       all.x = TRUE, all.y = FALSE) %>%
-
-# Vaccination against pandemic influenza A/H1N1v in England: A real-time economic evaluation, Marc Baguelin
-num_dat_temp <- data.frame(age = c("04", "514", "1524", "2544", "4564", "65."),
-                           p.NPFS = c(0.65, 0.64, 0.53, 0.50, 0.59, 0.80),
-                           p.GP = c(0.12, 0.12, 0.13, 0.13, 0.13, 0.21)) %>%
-  merge(num_dat) %>%
-  mutate(NPFS.H1N1 = p.NPFS*p.NPFS_swab_pos,
-         NPFS.notH1N1 = p.NPFS*(1 - p.NPFS_swab_pos),
-         GP.H1N1 = p.GP*p.GP_swab_pos,
-         GP.notH1N1 = p.GP*(1 - p.GP_swab_pos))
 
 
 
