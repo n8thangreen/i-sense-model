@@ -79,12 +79,34 @@ auth_NPFS <-
   dplyr::summarise(auth_NPFS = sum(auth))
 
 
+# number estimated conslutations-ILI GP ------------------------------------
+
+estim.consult <-
+  dat.posILI.GP %>%
+  group_by(NPFS_weeks_window, age) %>%
+  dplyr::summarise(estim.consult = sum(estim.consult))
+
+
+# fudge so that denominator is total ILI at GP, NPFS ----------------------
+
+total_service <-
+  merge(dat.posILI.GP, dat.posILI.NPFS,
+        by = c("age", "week", "NPFS_weeks_window")) %>%
+  mutate(total_service = authorisations + estim.consult) %>%
+  group_by(NPFS_weeks_window, age) %>%
+  dplyr::summarise(total_service = sum(total_service))
+
+
+# join all  ---------------------------------------------------------------
+
 num_dat <-
   ILI %>%
   merge(H1N1_GP) %>%
   merge(auth_NPFS) %>%
+  merge(estim.consult) %>%
   merge(GP_swab_pos) %>%
-  merge(NPFS_swab_pos)
+  merge(NPFS_swab_pos) %>%
+  merge(total_service)
 
 
 
@@ -92,9 +114,14 @@ num_dat <-
 
 num_dat <-
   num_dat %>%
-  mutate(notH1N1_GP = H1N1_GP * (1 - p.GP_swab_pos)/p.GP_swab_pos,
+  mutate(H1N1_GP = estim.consult * p.GP_swab_pos,
+         notH1N1_GP = estim.consult * (1 - p.GP_swab_pos),
          H1N1_NPFS = auth_NPFS * p.NPFS_swab_pos,
          notH1N1_NPFS = auth_NPFS * (1 - p.NPFS_swab_pos))
+
+
+
+
 
 
 
@@ -102,18 +129,13 @@ num_dat <-
 #  transition probability matrix
 #  ------------------------------------------------------------------------
 
-num_ILI <-
-  num_dat %>%
-  reshape2::melt(id.vars = c("age", "NPFS_weeks_window"),
-                                  variable.name = "to",
-                                  value.name = "num")
 
 trans_mat_ILI <-
   num_dat %>%
-  mutate(GP.H1N1 = H1N1_GP/ILI,
-         NPFS.H1N1 = H1N1_NPFS/ILI,
-         NPFS.notH1N1 = notH1N1_NPFS/ILI,
-         GP.notH1N1 = notH1N1_GP/ILI) %>%
+  mutate(GP.H1N1 = H1N1_GP/total_service,
+         NPFS.H1N1 = H1N1_NPFS/total_service,
+         NPFS.notH1N1 = notH1N1_NPFS/total_service,
+         GP.notH1N1 = notH1N1_GP/total_service) %>%
   reshape2::melt(id.vars = c("age", "NPFS_weeks_window"),
                  variable.name = "to",
                  value.name = "prob",
