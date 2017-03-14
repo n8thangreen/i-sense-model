@@ -51,16 +51,6 @@ trans_mat_coll <-
 
 
 # complete treatment ----------------------------------------------------
-#
-#TODO: missing ages
-# mising all ages window 1
-# missing 04 age  window 2 and 3
-#
-#
-
-
-# duplicate first NPFS week for missing pre-NPFS weeks --------------------
-
 
 trans_mat_Tx <-
   usersurvey %>%
