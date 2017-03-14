@@ -61,23 +61,6 @@ trans_mat_coll <-
 
 # duplicate first NPFS week for missing pre-NPFS weeks --------------------
 
-## too sparse data to do by week windows directly
-# filter(complete.cases(.)) %>%
-# trans_mat_Tx <-
-#   usersurvey %>%
-#   group_by(age) %>%
-#   dplyr::summarise(num_obtain = sum(obtainantivirals),
-#                    num_start = sum(startedantivirals01),
-#                    num_complete = sum(completedantivirals01)) %>%
-#   mutate(coll.start = num_start/num_obtain,
-#          start.complete = num_complete/num_start) %>%
-#   melt(id.vars = c("age", "NPFS_weeks_window"),
-#        measure.vars = c("coll.start", "start.complete"),
-#        variable.name = "fromto",
-#        value.name = "prob") %>%
-#   separate(fromto, c("from", "to"), "\\.") %>%
-#   select(from, to, everything())
-
 
 trans_mat_Tx <-
   usersurvey %>%
