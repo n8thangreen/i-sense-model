@@ -13,6 +13,8 @@ spec.seq  <- seq(0, 1, 0.1)
 sens.seq  <- seq(0, 1, 0.1)
 c_test.seq <- seq(0, 5, 1)
 
+
+# duplicate for each week window
 pop_age_window <-
   pop_age %>%
   slice(rep(1:n(), each = 3)) %>%

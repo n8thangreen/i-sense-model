@@ -17,6 +17,13 @@
 #' @examples
 #' Ec_by_age_window(trans_mat)
 #'
+#' spec_NPFS <- 0
+#' sens_NPFS <- 1
+#' spec_GP <- 0
+#' sens_GP <- 1
+#' c_testNPFS <- 0
+#' c_testGP <- 0
+#'
 Ec_by_age_window <- function(trans_mat,
                              spec_NPFS = 0,
                              sens_NPFS = 1,
@@ -26,7 +33,7 @@ Ec_by_age_window <- function(trans_mat,
                              c_testGP = 0){
 
   AGE <- unique(trans_mat$age)
-  AGE <- AGE[!AGE %in% c("total", NA)]
+  AGE <- AGE[!AGE %in% c("overall", "total", NA)]
 
   WINDOW <- unique(trans_mat$NPFS_weeks_window) %>% sort()
 
@@ -45,10 +52,13 @@ Ec_by_age_window <- function(trans_mat,
       try(out[i, j, ] <- with(input,
                            Ec_ILI(
                              # service use
-                             p_GP.H1N1 = prob[from == "ILI" & to == "GP.H1N1"],
-                             p_GP.notH1N1 = prob[from == "ILI" & to == "GP.notH1N1"],
-                             p_NPFS.H1N1 = prob[from == "ILI" & to == "NPFS.H1N1"],
-                             p_NPFS.notH1N1 = prob[from == "ILI" & to == "NPFS.notH1N1"],
+                             p_GP.H1N1 = prob[from == "Sx" & to == "GP_H1N1"],
+                             p_GP.notH1N1 = prob[from == "Sx" & to == "GP_notH1N1"],
+                             p_NPFS.H1N1 = prob[from == "Sx" & to == "NPFS_H1N1"],
+                             p_NPFS.notH1N1 = prob[from == "Sx" & to == "NPFS_notH1N1"],
+                             p_notseekcare_H1N1 = prob[from == "Sx" & to == "notseekcare_H1N1"],
+                             p_Sx = prob[from == "flu" & to == "Sx"],
+                             p_flu = prob[from == "pop" & to == "flu"],
 
                              # treatment
                              p_GP.collect = prob[from == "GP" & to == "coll"],
