@@ -19,7 +19,7 @@ ageGroups <- c("04", "514", "1524", "2544", "4564", "65.")
 dat.npfs <-
   dat.npfs %>%
   filter(week == min(week)) %>%
-  data.frame(weektemp = rep(FIRST_WEEK:29, each = length(ageGroups))) %>%
+  data.frame(weektemp = rep(FIRST_WEEK:29, each = length(ageGroups) + 1)) %>%
   select(-weeks_window, -NPFS_weeks_window, -NPFS_weeks, -week_start, -week, -week_end, -epiweek) %>%
   rename(week = weektemp) %>%
   merge(dates_lookup) %>%

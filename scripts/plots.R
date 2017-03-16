@@ -19,6 +19,9 @@ maxCost_scenario2d <- maxCost(scenario2d, scenario0)
 
 
 
+library(gridExtra)
+
+
 # maxCost[is.infinite(-maxCost)] <- 0
 
 # filled.contour(z = apply(maxCost, 1, rev),
@@ -26,40 +29,52 @@ maxCost_scenario2d <- maxCost(scenario2d, scenario0)
 #                ylab = "Specificity",
 #                color.palette = terrain.colors)
 
-lattice::levelplot(maxCost_scenario1,
+s1 <- lattice::levelplot(maxCost_scenario1,
                    xlab = "Specificity", ylab = "Sensitivity",
+                   at = seq(0,5,0.5),
+                   main = "scenario 1",
                    col.regions = gray(1 - 0:100/200)#,
                    # panel = function(...){
                    #   panel.contourplot(..., contour = TRUE)}
                    )
 
-lattice::levelplot(maxCost_scenario2a,
+s2 <- lattice::levelplot(maxCost_scenario2a,
                    xlab = "Specificity", ylab = "Sensitivity",
+                   at = seq(0,5,0.5),
+                   main = "scenario 2a",
                    col.regions = gray(1 - 0:100/200)#,
                    # panel = function(...){
                    #   panel.contourplot(..., contour = TRUE)}
 )
 
-lattice::levelplot(maxCost_scenario2b,
+s3 <- lattice::levelplot(maxCost_scenario2b,
                    xlab = "Specificity", ylab = "Sensitivity",
+                   at = seq(0,5,0.5),
+                   main = "scenario 2b",
                    col.regions = gray(1 - 0:100/200)#,
                    # panel = function(...){
                    #   panel.contourplot(..., contour = TRUE)}
 )
 
-lattice::levelplot(maxCost_scenario2c,
+s4 <- lattice::levelplot(maxCost_scenario2c,
                    xlab = "Specificity", ylab = "Sensitivity",
+                   at = seq(0,5,0.5),
+                   main = "scenario 2c",
                    col.regions = gray(1 - 0:100/200)#,
                    # panel = function(...){
                    #   panel.contourplot(..., contour = TRUE)}
 )
 
-lattice::levelplot(maxCost_scenario2d,
+s5 <- lattice::levelplot(maxCost_scenario2d,
                    xlab = "Specificity", ylab = "Sensitivity",
+                   at = seq(0,5,0.5),
+                   main = "scenario 2d",
                    col.regions = gray(1 - 0:100/200)#,
                    # panel = function(...){
                    #   panel.contourplot(..., contour = TRUE)}
 )
+
+grid.arrange(s1, s2, s3, s4, ncol = 2)
 
 
 # break-even test performance ---------------------------------------------
@@ -70,15 +85,15 @@ contour(z = maxCost_scenario1,
 
 contour(z = maxCost_scenario2a,
         xlab = "Specificity",
-        ylab = "Sensitivity", levels = 0.5, add = TRUE, labels = "scenario 2a")
+        ylab = "Sensitivity", levels = 0.5, add = TRUE, labels = "scenario 2a", lty = 2)
 
 contour(z = maxCost_scenario2b,
         xlab = "Specificity",
-        ylab = "Sensitivity", levels = 0.5, add = TRUE, labels = "scenario 2b")
+        ylab = "Sensitivity", levels = 0.5, add = TRUE, labels = "scenario 2b", lwd = 2)
 
 contour(z = maxCost_scenario2c,
         xlab = "Specificity",
-        ylab = "Sensitivity", levels = 0.5, add = TRUE, labels = "scenario 2c")
+        ylab = "Sensitivity", levels = 0.5, add = TRUE, labels = "scenario 2c", lty = 2, lwd = 2)
 
 contour(z = maxCost_scenario2d,
         xlab = "Specificity",
@@ -89,16 +104,16 @@ contour(z = maxCost_scenario2d,
 # INMB --------------------------------------------------------------------
 
 INMBout <- array(data = NA,
-                 dim = c(length(spec_GP.seq), length(sens_GP.seq)),
-                 dimnames = list(spec_GP.seq, sens_GP.seq))
+                 dim = c(length(spec.seq), length(sens.seq)),
+                 dimnames = list(spec.seq, sens.seq))
 c_index <- 2
 
-for (i in seq_along(spec_GP.seq)) {
-  for (j in seq_along(sens_GP.seq)) {
+for (i in seq_along(spec.seq)) {
+  for (j in seq_along(sens.seq)) {
 
     INMBout[i,j] <-
-      INMB(e = scenario0["e"] - scenario2d[i,j,c_index ,"e"],
-           c = scenario2d[i,j,c_index ,"c"] - scenario0["c"])
+      INMB(QALYgain = scenario0["e"] - scenario2d[i,j,c_index ,"e"],
+           cost_incurred = scenario2d[i,j,c_index ,"c"] - scenario0["c"])
   }
 }
 
