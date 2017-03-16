@@ -2,30 +2,37 @@
 #' Expected Total Cost Incurred and QALY Loss For Given Population
 #'
 #' @param cost_QALY
-#' @param total_service Sub-population sizes in long format
+#' @param pop Sub-population sizes in long format
 #'
 #' @return
 #' @export
 #'
+#' @example
+#' cost_QALY <- trans_mat %>%
+#'              Ec_by_age_window(spec_GP = 0.6,
+#'                               sens_GP = 0.8,
+#'                               c_testGP = 10)
+#' Ec_pop(cost_QALY, pop = pop_age_window)
+#'
 Ec_pop <- function(cost_QALY,
-                   total_service){
+                   pop){
 
   out <- list()
 
-  total_service2 <- dcast(data = total_service,
-                          NPFS_weeks_window ~ age,
-                          value.var = "total_service")
+  pop2 <- dcast(data = pop,
+                NPFS_weeks_window ~ age,
+                value.var = "pop")
 
-  rownames(total_service2) <- total_service2$NPFS_weeks_window
+  rownames(pop2) <- pop2$NPFS_weeks_window
 
-  row_match <- intersect(rownames(total_service2),
+  row_match <- intersect(rownames(pop2),
                          rownames(cost_QALY[,,"c"]))
 
-  col_match <- intersect(colnames(total_service2),
+  col_match <- intersect(colnames(pop2),
                          colnames(cost_QALY[,,"c"]))
 
-  out$c <- total_service2[row_match, col_match] * cost_QALY[row_match, col_match, "c"]
-  out$e <- total_service2[row_match, col_match] * cost_QALY[row_match, col_match, "e"]
+  out$c <- pop2[row_match, col_match] * cost_QALY[row_match, col_match, "c"]
+  out$e <- pop2[row_match, col_match] * cost_QALY[row_match, col_match, "e"]
 
   return(out)
 }
