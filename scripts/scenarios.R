@@ -13,17 +13,22 @@ spec.seq  <- seq(0, 1, 0.1)
 sens.seq  <- seq(0, 1, 0.1)
 c_test.seq <- seq(0, 5, 1)
 
+pop_age_window <-
+  pop_age %>%
+  slice(rep(1:n(), each = 3)) %>%
+  mutate(NPFS_weeks_window = rep(1:3, times = n()/3))
+
 
 # scenario 0 (status-quo) -------------------------------------------------
 
 scenario0 <-
   trans_mat %>%
   Ec_by_age_window() %>%
-  Ec_pop(total_service) %>%
+  Ec_pop(pop_age_window) %>%
   sapply(sum, na.rm = TRUE)
 
 
-# scenario 1 (PCT test @ GP) ----------------------------------------------
+# scenario 1 (test @ GP only) ----------------------------------------------
 
 scenario1 <- array(data = NA,
                    dim = c(length(spec.seq), length(sens.seq), length(c_test.seq), 2),
@@ -38,14 +43,14 @@ for (i in seq_along(spec.seq)) {
         Ec_by_age_window(spec_GP = spec.seq[i],
                          sens_GP = sens.seq[j],
                          c_testGP = c_test.seq[k]) %>%
-        Ec_pop(total_service) %>%
+        Ec_pop(pop_age_window) %>%
         sapply(sum, na.rm = TRUE)
     }
   }
 }
 
 
-# scenario 2a (NPFS pos 2-step) -------------------------------------------
+# scenario 2a (test @ NPFS only) ---------------------------------------------
 
 scenario2a <- array(data = NA,
                     dim = c(length(spec.seq), length(sens.seq), length(c_test.seq), 2),
@@ -60,7 +65,7 @@ for (i in seq_along(spec.seq)) {
         Ec_by_age_window(spec_NPFS = spec.seq[i],
                          sens_NPFS = sens.seq[j],
                          c_testNPFS = c_test.seq[k]) %>%
-        Ec_pop(total_service) %>%
+        Ec_pop(pop_age_window) %>%
         sapply(sum, na.rm = TRUE)
     }
   }
@@ -68,7 +73,7 @@ for (i in seq_along(spec.seq)) {
 
 
 
-# scenario 2b (obtain Rx increase) ----------------------------------------
+# scenario 2b (test @ NPFS only AND obtain Rx increase) ----------------------
 
 trans_mat2 <-
   trans_mat %>%
@@ -89,7 +94,7 @@ for (i in seq_along(spec.seq)) {
         Ec_by_age_window(spec_NPFS = spec.seq[i],
                          sens_NPFS = sens.seq[j],
                          c_testNPFS = c_test.seq[k]) %>%
-        Ec_pop(total_service) %>%
+        Ec_pop(pop_age_window) %>%
         sapply(sum, na.rm = TRUE)
     }
   }
@@ -97,22 +102,24 @@ for (i in seq_along(spec.seq)) {
 
 
 
-# scenario 2c (switch from GP to NPFS) ------------------------------------
+# scenario 2c (test @ NPFS only AND switch from GP to NPFS) ---------------------
 ## assume 1/2 switch
 
-# sparse-square arrangement
+# use sparse-square arrangement
+
 trans_mat2 <-
-  dcast(data = trans_mat,
-        from + age + NPFS_weeks_window ~ to,
+  trans_mat %>%
+  dcast(from + age + NPFS_weeks_window ~ to,
         value.var = "prob") %>%
-  mutate(GP.H1N1 = GP.H1N1/2,
-         GP.notH1N1 = GP.notH1N1/2,
-         NPFS.H1N1 = NPFS.H1N1 + GP.H1N1,
-         NPFS.notH1N1 = NPFS.notH1N1 + GP.notH1N1) %>%
+  mutate(NPFS_H1N1 = NPFS_H1N1 + GP_H1N1/2,
+         NPFS_notH1N1 = NPFS_notH1N1 + GP_notH1N1/2,
+         GP_H1N1 = GP_H1N1/2,
+         GP_notH1N1 = GP_notH1N1/2) %>%
   melt(id.vars = c("from", "age", "NPFS_weeks_window"),
        variable.name = "to",
        value.name = "prob") %>%
-  select(from, to, everything())
+  select(from, to, everything()) %>%
+  filter(complete.cases(.))
 
 
 scenario2c <- array(data = NA,
@@ -128,7 +135,7 @@ for (i in seq_along(spec.seq)) {
         Ec_by_age_window(spec_NPFS = spec.seq[i],
                          sens_NPFS = sens.seq[j],
                          c_testNPFS = c_test.seq[k]) %>%
-        Ec_pop(total_service) %>%
+        Ec_pop(pop_age_window) %>%
         sapply(sum, na.rm = TRUE)
     }
   }
@@ -136,24 +143,25 @@ for (i in seq_along(spec.seq)) {
 
 
 
-# scenario 2d (NPFS use increase) -----------------------------------------
+# scenario 2d (test @ NPFS only AND NPFS use increase) -----------------------------------------
 ## assume same prop who already seek care
-## need to adjust the number of ILI as input to x2
-##TODO## not equivalent...
 
-total_service2 <-
-  total_service %>%
-  mutate(total_service = total_service*2)
+##TODO##
+#
+#
 
-# adjust the _relative_ probabilities
 trans_mat2 <-
   trans_mat %>%
-  mutate(prob = ifelse(to == "GP.H1N1",
-                       prob/2,
-                       prob),
-         prob = ifelse(to == "GP.notH1N1",
-                       prob/2,
-                       prob))
+  dcast(from + age + NPFS_weeks_window ~ to,
+        value.var = "prob") %>%
+  mutate(NPFS_H1N1 = NPFS_H1N1 + (1 - NPFS_H1N1 - GP_H1N1 - NPFS_notH1N1 - GP_notH1N1)*(NPFS_H1N1 + GP_H1N1),
+         NPFS_notH1N1 = NPFS_notH1N1 + (1 - NPFS_H1N1 - GP_H1N1 - NPFS_notH1N1 - GP_notH1N1)*(NPFS_notH1N1 + GP_notH1N1)) %>%
+  melt(id.vars = c("from", "age", "NPFS_weeks_window"),
+       variable.name = "to",
+       value.name = "prob") %>%
+  select(from, to, everything()) %>%
+  filter(complete.cases(.))
+
 
 scenario2d <- array(data = NA,
                     dim = c(length(spec.seq), length(sens.seq), length(c_test.seq), 2),
@@ -168,7 +176,7 @@ for (i in seq_along(spec.seq)) {
         Ec_by_age_window(spec_NPFS = spec.seq[i],
                          sens_NPFS = sens.seq[j],
                          c_testNPFS = c_test.seq[k]) %>%
-        Ec_pop(total_service2) %>%
+        Ec_pop(pop_age_window) %>%
         sapply(sum, na.rm = TRUE)
     }
   }
