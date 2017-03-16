@@ -19,7 +19,7 @@ load(file = "C:/Users/Nathan/Dropbox/i-sense/R/NPFS_access-auth-coll/data cleane
 load(file = "C:/Users/Nathan/Dropbox/i-sense/R/user-survey/data cleaned/usersurvey.RData")
 load(file = "C:/Users/Nathan/Dropbox/i-sense/data cleaned/data_positiveILI_GP_perrine_feb2017.RData")
 load(file = "C:/Users/Nathan/Dropbox/i-sense/data cleaned/data_positiveILI_NPFS_perrine_feb2017.RData")
-load("C:/Users/Nathan/Dropbox/i-sense/R/Ilarias-model/H1N1model/data/pop_age.RData")
+load(file = "C:/Users/Nathan/Dropbox/i-sense/R/Ilarias-model/H1N1model/data/pop_age.RData")
 
 
 ## are the start and end dates the same for all data sets?
@@ -39,7 +39,7 @@ dat.posILI.NPFS <- filter(dat.posILI.NPFS, week >= FIRST_WEEK, week <= LAST_WEEK
 dat.npfs <- filter(dat.npfs, week >= FIRST_WEEK, week <= LAST_WEEK)
 
 
-p.seekcare <- data.frame(NPFS_weeks_window = c(1,2,3),
+p.seekcare <- data.frame(NPFS_weeks_window = c(1, 2, 3),
                          p.seekcare = c(0.3, 0.5, 0.5))
 
 
@@ -110,19 +110,33 @@ total_service <-
 
 # number ILI, all flu in pop -----------------------------------------------
 
+PROP_ILI_SYMP <- 0.669 # (58.3, 74.5) # Time lines of infection..., Carrat (2008)
+
 auth_NPFS <-
   auth_NPFS %>%
   merge(p.seekcare) %>%
   mutate(Sx_NPFS = auth_NPFS/p.seekcare,
-         flu_NPFS = Sx_NPFS/0.669) %>%
+         flu_NPFS = Sx_NPFS/PROP_ILI_SYMP) %>%
   select(-p.seekcare)
 
 estim.consult <-
   estim.consult %>%
   merge(p.seekcare) %>%
   mutate(Sx_GP = estim.consult/p.seekcare,
-         flu_GP = Sx_GP/0.669) %>%
+         flu_GP = Sx_GP/PROP_ILI_SYMP) %>%
   select(-p.seekcare)
+
+
+
+# prop H1N1 Sx who don't seek care -------------------------------------------
+
+notseekcare_H1N1 <-
+  p.seekcare %>%
+  merge(GP_swab_pos,
+        by = "NPFS_weeks_window") %>%
+  mutate(Sx.notseekcare_H1N1 = (1 - p.seekcare)*p.GP_swab_pos) %>%
+  select(-p.seekcare, -p.GP_swab_pos)
+
 
 
 # join all  ---------------------------------------------------------------
@@ -134,6 +148,7 @@ num_dat <-
   merge(estim.consult, all = TRUE) %>%
   merge(GP_swab_pos, all = TRUE) %>%
   merge(NPFS_swab_pos, all = TRUE) %>%
+  merge(notseekcare_H1N1, all = TRUE) %>%
   merge(pop_age, all = TRUE)
 
 
@@ -147,35 +162,34 @@ num_dat <-
   mutate(H1N1_GP = estim.consult * p.GP_swab_pos,
          notH1N1_GP = estim.consult * (1 - p.GP_swab_pos),
          H1N1_NPFS = auth_NPFS * p.NPFS_swab_pos,
-         notH1N1_NPFS = auth_NPFS * (1 - p.NPFS_swab_pos))
-
-
-num_dat <-
-  num_dat %>%
-  mutate(Sx = Sx_GP + Sx_NPFS,
-         flu = flu_GP + flu_NPFS)
+         notH1N1_NPFS = auth_NPFS * (1 - p.NPFS_swab_pos),
+         Sx = Sx_GP + Sx_NPFS,
+         flu = flu_GP + flu_NPFS,
+         Sx.GP_H1N1 = H1N1_GP/Sx,
+         Sx.NPFS_H1N1 = H1N1_NPFS/Sx,
+         Sx.NPFS_notH1N1 = notH1N1_NPFS/Sx,
+         Sx.GP_notH1N1 = notH1N1_GP/Sx,
+         flu.Sx = Sx/flu,
+         pop.flu = flu/pop)
 
 
 #  ------------------------------------------------------------------------
 #  transition probability matrix
 #  ------------------------------------------------------------------------
 
-
 trans_mat_ILI <-
   num_dat %>%
-  mutate(GP.H1N1 = H1N1_GP/Sx,
-         NPFS.H1N1 = H1N1_NPFS/Sx,
-         NPFS.notH1N1 = notH1N1_NPFS/Sx,
-         GP.notH1N1 = notH1N1_GP/Sx,
-         p.pop_flu = flu/pop) %>%
   reshape2::melt(id.vars = c("age", "NPFS_weeks_window"),
-                 variable.name = "to",
+                 variable.name = "fromto",
                  value.name = "prob",
-                 measure.vars = c("GP.H1N1",
-                                  "NPFS.H1N1",
-                                  "NPFS.notH1N1",
-                                  "GP.notH1N1")) %>%
-  data.frame(from = "ILI") %>%
+                 measure.vars = c("Sx.GP_H1N1",
+                                  "Sx.NPFS_H1N1",
+                                  "Sx.NPFS_notH1N1",
+                                  "Sx.GP_notH1N1",
+                                  "Sx.notseekcare_H1N1",
+                                  "flu.Sx",
+                                  "pop.flu")) %>%
+  separate(fromto, c("from", "to"), "\\.") %>%
   select(from, to, everything()) %>%
   arrange(to)
 

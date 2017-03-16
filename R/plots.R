@@ -1,12 +1,15 @@
 # plots
 
 
-INMB <- function(e, c, wtp = 20000){
-  e*wtp - c
+INMB <- function(QALYgain,
+                 cost_incurred,
+                 wtp = 30000){
+  QALYgain*wtp - cost_incurred
 }
 
 
-maxCost <- function(interv, status_quo) {
+maxCost <- function(interv,
+                    status_quo) {
 
   spec_GP.seq <- dimnames(interv)[[1]]
   sens_GP.seq <- dimnames(interv)[[2]]
@@ -19,8 +22,8 @@ maxCost <- function(interv, status_quo) {
     for (j in seq_along(sens_GP.seq)) {
 
       maxCost[i,j] <-
-        which(INMB(e = status_quo["e"] - interv[i,j, ,"e"],
-                   c = interv[i,j, ,"c"] - status_quo["c"]) > 0) %>%
+        which(INMB(QALYgain = status_quo["e"] - interv[i,j, ,"e"],
+                   cost_incurred = interv[i,j, ,"c"] - status_quo["c"]) > 0) %>%
         names() %>%
         as.numeric() %>% max()
     }
