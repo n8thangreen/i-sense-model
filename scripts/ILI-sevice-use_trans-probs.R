@@ -100,28 +100,10 @@ estim.consult <-
   dplyr::summarise(estim.consult = sum(estim.consult))
 
 
-# number ILI, all flu in pop -----------------------------------------------
-
 PROP_ILI_SYMP <- 0.669 # (58.3, 74.5) # Time lines of infection..., Carrat (2008)
 
 
-auth_NPFS <-
-  auth_NPFS %>%
-  merge(p.seekcare) %>%
-  mutate(Sx_NPFS = auth_NPFS/p.seekcare,
-         flu_NPFS = Sx_NPFS/PROP_ILI_SYMP) %>%
-  select(-p.seekcare)
-
-estim.consult <-
-  estim.consult %>%
-  merge(p.seekcare) %>%
-  mutate(Sx_GP = estim.consult/p.seekcare,
-         flu_GP = Sx_GP/PROP_ILI_SYMP) %>%
-  select(-p.seekcare)
-
-
-
-# prop H1N1 Sx who don't seek care -------------------------------------------
+# prop H1N1 Sx who _don't_ seek care ----------------------------------------
 
 notseekcare_H1N1 <-
   p.seekcare %>%
@@ -148,7 +130,7 @@ num_dat_ILI <-
 num_dat_ILI[is.na(num_dat_ILI)] <- 0
 
 
-# number ILI not/H1N1 to GP/NPFS -------------------------------------------
+# combined estimates ------------------------------------------------------
 
 num_dat_ILI <-
   num_dat_ILI %>%
@@ -156,12 +138,14 @@ num_dat_ILI <-
          notH1N1_GP = estim.consult * (1 - p.GP_swab_pos),
          H1N1_NPFS = auth_NPFS * p.NPFS_swab_pos,
          notH1N1_NPFS = auth_NPFS * (1 - p.NPFS_swab_pos),
-         Sx = Sx_GP + Sx_NPFS,
-         flu = flu_GP + flu_NPFS,
+         seekcare = auth_NPFS + estim.consult,
+         Sx = seekcare/p.seekcare,
+         flu = Sx/PROP_ILI_SYMP,
          Sx.GP_H1N1 = H1N1_GP/Sx,
          Sx.NPFS_H1N1 = H1N1_NPFS/Sx,
          Sx.NPFS_notH1N1 = notH1N1_NPFS/Sx,
          Sx.GP_notH1N1 = notH1N1_GP/Sx,
+         notseekcare_H1N1 = Sx.notseekcare_H1N1*Sx,
          flu.Sx = Sx/flu,
          pop.flu = flu/pop)
 
