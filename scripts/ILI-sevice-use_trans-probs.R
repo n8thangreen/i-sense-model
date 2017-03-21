@@ -100,19 +100,10 @@ estim.consult <-
   dplyr::summarise(estim.consult = sum(estim.consult))
 
 
-# 'fudge' so that denominator is total ILI at GP, NPFS ----------------------
-
-total_service <-
-  merge(dat.posILI.GP, dat.posILI.NPFS,
-        by = c("age", "week", "NPFS_weeks_window")) %>%
-  mutate(total_service = authorisations + estim.consult) %>%
-  group_by(NPFS_weeks_window, age) %>%
-  dplyr::summarise(total_service = sum(total_service))
-
-
 # number ILI, all flu in pop -----------------------------------------------
 
 PROP_ILI_SYMP <- 0.669 # (58.3, 74.5) # Time lines of infection..., Carrat (2008)
+
 
 auth_NPFS <-
   auth_NPFS %>%
