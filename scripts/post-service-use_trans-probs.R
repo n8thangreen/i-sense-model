@@ -9,7 +9,7 @@
 library(reshape2)
 
 
-load("C:/Users/Nathan/Dropbox/i-sense/R/Ilarias-model/H1N1model/data/dates_lookup.RData")
+load("../../R/Ilarias-model/H1N1model/data/dates_lookup.RData")
 
 ageGroups <- c("04", "514", "1524", "2544", "4564", "65.")
 
@@ -28,12 +28,15 @@ dat.npfs <-
 
 # antiviral collection ----------------------------------------------------
 
-trans_mat_coll <-
+num_dat_coll <-
   dat.npfs %>%
   group_by(NPFS_weeks_window, age) %>%
   dplyr::summarise(num_coll = sum(coll),
                    num_auth = sum(auth)) %>%
-  mutate(coll = num_coll/num_auth) %>%
+  mutate(coll = num_coll/num_auth)
+
+trans_mat_coll <-
+  num_dat_coll %>%
   melt(id.vars = c("age", "NPFS_weeks_window"),
        measure.vars = "coll",
        variable.name = "to",
@@ -52,7 +55,7 @@ trans_mat_coll <-
 
 # complete treatment ----------------------------------------------------
 
-trans_mat_Tx <-
+num_dat_Tx <-
   usersurvey %>%
   group_by(age) %>%
   dplyr::summarise(num_obtain = sum(obtainantivirals),
@@ -66,7 +69,11 @@ trans_mat_Tx <-
                        filter(., age == "514")[-1])) %>%
   filter(complete.cases(.)) %>%
   slice(rep(1:n(), each = 3)) %>%
-  mutate(NPFS_weeks_window = rep(1:3, times = length(ageGroups))) %>%
+  mutate(NPFS_weeks_window = rep(1:3, times = length(ageGroups)))
+
+
+trans_mat_Tx <-
+  num_dat_Tx %>%
   melt(id.vars = c("age", "NPFS_weeks_window"),
        measure.vars = c("coll.start", "start.complete"),
        variable.name = "fromto",
@@ -86,7 +93,7 @@ completeTx.adj <- 0.52
 
 
 # Presanis et al (2011) BMJ "Changes in severity of 2009 pandemic A/..."
-trans_mat_hosp <-
+num_dat_hosp <-
   data.frame(age = ageGroups,
              NPFS_weeks_window = 1,
              ILI.hosp = 0.0054,
@@ -107,7 +114,10 @@ trans_mat_hosp <-
                coll.hosp = 0.0055,
                start.hosp = 0.0055,
                hosp.death = 0.032)) %>%
-  mutate(complete.hosp = start.hosp*completeTx.adj) %>%
+  mutate(complete.hosp = start.hosp*completeTx.adj)
+
+trans_mat_hosp <-
+  num_dat_hosp %>%
   melt(id.vars = c("age", "NPFS_weeks_window"),
        variable.name = "fromto",
        value.name = "prob") %>%
@@ -120,5 +130,13 @@ trans_mat <- rbind(trans_mat_ILI,
                    trans_mat_coll,
                    trans_mat_Tx,
                    trans_mat_hosp)
+
+num_dat <-
+  num_dat_ILI %>%
+  merge(num_dat_coll) %>%
+  merge(num_dat_Tx) %>%
+  merge(num_dat_hosp)
+
+num_dat <- num_dat[, !grepl("\\.", colnames(num_dat))]
 
 

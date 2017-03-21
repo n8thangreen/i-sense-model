@@ -114,7 +114,7 @@ Ec_ILI <-  function(p_GP.H1N1 = 0.1,
                     # costs
                     c_NPFS = 17, #phone call #Baguelin, Vaccine (2010)
                     c_GP = 37, #consultation #Baguelin, Vaccine (2010)
-                    c_collect = 10, #antivirals #Baguelin, Vaccine (2010)
+                    c_collect = 15.41, #antivirals #BNF
                     c_avNPFS = 16, #antivirals + delivery #Baguelin, Vaccine (2010)
                     c_hosp = 840, #Baguelin, Vaccine (2010)
                     c_death = 1500, #intensive care #Baguelin, Vaccine (2010)

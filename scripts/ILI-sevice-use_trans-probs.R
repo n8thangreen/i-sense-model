@@ -12,21 +12,20 @@ library(tidyr)
 
 # read data
 
-load(file = "C:/Users/Nathan/Dropbox/i-sense/R/Ilarias-model/H1N1model/data cleaned/ILI_2009_2011_long.RData")
-load(file = "C:/Users/Nathan/Dropbox/i-sense/R/Ilarias-model/H1N1model/data cleaned/H1N1_long.RData")
-load(file = "C:/Users/Nathan/Dropbox/i-sense/R/Ilarias-model/H1N1model/data cleaned/ILI_diag_long.RData")
-load(file = "C:/Users/Nathan/Dropbox/i-sense/R/NPFS_access-auth-coll/data cleaned/dat.npfs.RData")
-load(file = "C:/Users/Nathan/Dropbox/i-sense/R/user-survey/data cleaned/usersurvey.RData")
-load(file = "C:/Users/Nathan/Dropbox/i-sense/data cleaned/data_positiveILI_GP_perrine_feb2017.RData")
-load(file = "C:/Users/Nathan/Dropbox/i-sense/data cleaned/data_positiveILI_NPFS_perrine_feb2017.RData")
-load(file = "C:/Users/Nathan/Dropbox/i-sense/R/Ilarias-model/H1N1model/data/pop_age.RData")
+load(file = "../../R/Ilarias-model/H1N1model/data cleaned/ILI_2009_2011_long.RData")
+load(file = "../../R/Ilarias-model/H1N1model/data cleaned/H1N1_long.RData")
+load(file = "../../R/Ilarias-model/H1N1model/data cleaned/ILI_diag_long.RData")
+load(file = "../../R/NPFS_access-auth-coll/data cleaned/dat.npfs.RData")
+load(file = "../../R/user-survey/data cleaned/usersurvey.RData")
+load(file = "../../data cleaned/data_positiveILI_GP_perrine_feb2017.RData")
+load(file = "../../data cleaned/data_positiveILI_NPFS_perrine_feb2017.RData")
+load(file = "../../R/Ilarias-model/H1N1model/data/pop_age.RData")
 
 
 ## are the start and end dates the same for all data sets?
 # testthat::is_equivalent_to()
 
 # use the start and end time shortest
-# week >= 31, week <= 57)
 FIRST_WEEK <- 20
 LAST_WEEK <- 57
 
@@ -39,8 +38,11 @@ dat.posILI.NPFS <- filter(dat.posILI.NPFS, week >= FIRST_WEEK, week <= LAST_WEEK
 dat.npfs <- filter(dat.npfs, week >= FIRST_WEEK, week <= LAST_WEEK)
 
 
+##TODO## Using an online survey of healthcare-seeking behaviour to estimate () Brooks-Pollock
+
+# FluWatch. (Hayward et al., 2014)
 p.seekcare <- data.frame(NPFS_weeks_window = c(1, 2, 3),
-                         p.seekcare = c(0.3, 0.5, 0.5))
+                         p.seekcare = c(0.172, 0.172, 0.172))
 
 
 # swabbing positivity/negativity ------------------------------------------
@@ -141,7 +143,7 @@ notseekcare_H1N1 <-
 
 # join all  ---------------------------------------------------------------
 
-num_dat <-
+num_dat_ILI <-
   ILI %>%
   merge(H1N1_GP, all = TRUE) %>%
   merge(auth_NPFS, all = TRUE) %>%
@@ -152,13 +154,13 @@ num_dat <-
   merge(pop_age, all = TRUE)
 
 
-num_dat[is.na(num_dat)] <- 0
+num_dat_ILI[is.na(num_dat_ILI)] <- 0
 
 
 # number ILI not/H1N1 to GP/NPFS -------------------------------------------
 
-num_dat <-
-  num_dat %>%
+num_dat_ILI <-
+  num_dat_ILI %>%
   mutate(H1N1_GP = estim.consult * p.GP_swab_pos,
          notH1N1_GP = estim.consult * (1 - p.GP_swab_pos),
          H1N1_NPFS = auth_NPFS * p.NPFS_swab_pos,
@@ -178,7 +180,7 @@ num_dat <-
 #  ------------------------------------------------------------------------
 
 trans_mat_ILI <-
-  num_dat %>%
+  num_dat_ILI %>%
   reshape2::melt(id.vars = c("age", "NPFS_weeks_window"),
                  variable.name = "fromto",
                  value.name = "prob",
