@@ -3,7 +3,7 @@
 # N Green
 # Sept 2016
 #
-# create model inputs for decision tree
+# create model inputs for decision tree: upto service use
 
 
 library(dplyr)
@@ -45,15 +45,20 @@ p.seekcare <- data.frame(NPFS_weeks_window = c(1, 2, 3),
                          p.seekcare = c(0.172, 0.172, 0.172))
 
 
+dat.posILI.GP <-
+  dat.posILI.GP %>%
+  rename(auth_GP = estim.consult)
+
+
 # swabbing positivity/negativity ------------------------------------------
 
 GP_swab_pos <-
   dat.posILI.GP %>%
   group_by(NPFS_weeks_window, age) %>%
   dplyr::summarise(posILI = sum(posILI),
-                   estim.consult = sum(estim.consult)) %>%
-  mutate(p.GP_swab_pos = posILI/estim.consult) %>%
-  select(-posILI, -estim.consult)
+                   auth_GP = sum(auth_GP)) %>%
+  mutate(p.GP_swab_pos = posILI/auth_GP) %>%
+  select(-posILI, -auth_GP)
 
 NPFS_swab_pos <-
   dat.posILI.NPFS %>%
@@ -94,10 +99,10 @@ auth_NPFS <-
 
 # number estimated consultations-ILI GP ------------------------------------
 
-estim.consult <-
+auth_GP <-
   dat.posILI.GP %>%
   group_by(NPFS_weeks_window, age) %>%
-  dplyr::summarise(estim.consult = sum(estim.consult))
+  dplyr::summarise(auth_GP = sum(auth_GP))
 
 
 PROP_ILI_SYMP <- 0.669 # (58.3, 74.5) # Time lines of infection..., Carrat (2008)
@@ -120,11 +125,12 @@ num_dat_ILI <-
   ILI %>%
   merge(H1N1_GP, all = TRUE) %>%
   merge(auth_NPFS, all = TRUE) %>%
-  merge(estim.consult, all = TRUE) %>%
+  merge(auth_GP, all = TRUE) %>%
   merge(GP_swab_pos, all = TRUE) %>%
   merge(NPFS_swab_pos, all = TRUE) %>%
   merge(notseekcare_H1N1, all = TRUE) %>%
-  merge(pop_age, all = TRUE)
+  merge(pop_age, all = TRUE) %>%
+  merge(p.seekcare)
 
 
 num_dat_ILI[is.na(num_dat_ILI)] <- 0
@@ -134,11 +140,11 @@ num_dat_ILI[is.na(num_dat_ILI)] <- 0
 
 num_dat_ILI <-
   num_dat_ILI %>%
-  mutate(H1N1_GP = estim.consult * p.GP_swab_pos,
-         notH1N1_GP = estim.consult * (1 - p.GP_swab_pos),
+  mutate(H1N1_GP = auth_GP * p.GP_swab_pos,
+         notH1N1_GP = auth_GP * (1 - p.GP_swab_pos),
          H1N1_NPFS = auth_NPFS * p.NPFS_swab_pos,
          notH1N1_NPFS = auth_NPFS * (1 - p.NPFS_swab_pos),
-         seekcare = auth_NPFS + estim.consult,
+         seekcare = auth_NPFS + auth_GP,
          Sx = seekcare/p.seekcare,
          flu = Sx/PROP_ILI_SYMP,
          Sx.GP_H1N1 = H1N1_GP/Sx,

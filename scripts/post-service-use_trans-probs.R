@@ -3,13 +3,14 @@
 # N Green
 # Feb 2017
 #
-# create transition probability arrays
+# create model inputs for decision tree: after service use
 
 
 library(reshape2)
 
 
 load("../../R/Ilarias-model/H1N1model/data/dates_lookup.RData")
+
 
 ageGroups <- c("04", "514", "1524", "2544", "4564", "65.")
 
@@ -41,16 +42,29 @@ trans_mat_coll <-
        measure.vars = "coll",
        variable.name = "to",
        value.name = "prob") %>%
-  data.frame(from = "GP") %>%
+  data.frame(from = "auth_GP") %>%
   select(from, to, everything())
 
 # duplicate from-GP for from-NPFS
 trans_mat_coll <-
   trans_mat_coll %>%
   select(-from) %>%
-  data.frame(from = "NPFS") %>%
+  data.frame(from = "auth_NPFS") %>%
   select(from, to, everything()) %>%
   rbind(trans_mat_coll)
+
+
+
+#
+#
+##TODO##
+#
+trans_mat_coll
+merge(auth_NPFS
+      auth_GP)
+prob*auth_NPFS
+prob*auth_GP
+
 
 
 # complete treatment ----------------------------------------------------
@@ -137,6 +151,8 @@ num_dat <-
   merge(num_dat_Tx) %>%
   merge(num_dat_hosp)
 
-num_dat <- num_dat[, !grepl("\\.", colnames(num_dat))]
+
+num_dat_counts <- num_dat[, !grepl("\\.", colnames(num_dat))]
+num_dat_probs <- num_dat[, grepl("(\\.)|NPFS_weeks_window|age", colnames(num_dat))]
 
 
