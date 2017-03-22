@@ -6,24 +6,19 @@
 # population counts for each scenario
 
 
-multimerge <- function(LIST, BY){
+library(magrittr)
 
-  out <- LIST[[1]]
 
-  for (i in seq_along(LIST)[-1]) {
-
-    out <- merge(out, LIST[[i]], by = BY)
-  }
-
-  names(out)[!names(out) %in% c("window","variable")] <- names(LIST)
-
-  return(out)
-}
+# duplicate for each week window
+pop_age_window <-
+  pop_age %>%
+  slice(rep(1:n(), each = 3)) %>%
+  mutate(NPFS_weeks_window = rep(1:3, times = n()/3))
 
 
 # scenario 0 (status-quo) -------------------------------------------------
 
-nums_list <-
+scenario0_counts <-
   trans_mat %>%
   E_num_by_age_window() %>%
   E_num_pop(pop_age_window) %>%
@@ -31,41 +26,44 @@ nums_list <-
     data.frame(window = rownames(x),
                x, check.names = FALSE) %>% melt())
 
-flat_num <- multimerge(nums_list, c("variable","window"))
+scenario0_counts <- multimerge(scenario0_counts, c("variable","window"))
 
-write.csv(flat_num, "../../data cleaned/flat_num.csv")
-
-
-scenario0 <-
-  trans_mat %>%
-  E_num_by_age_window() %>%
-  E_num_pop(pop_age_window) %>%
-  sapply(sum, na.rm = TRUE) %>%
-  format(digits = 3)
+write.csv(scenario0_counts, "../../data cleaned/scenario0_counts_table.csv")
 
 
 # scenario 1 (test @ GP only) ----------------------------------------------
 
-scenario1 <-
+scenario1_counts <-
   trans_mat %>%
   E_num_by_age_window(spec_GP = 0.64,
                       sens_GP = 0.96,
                       c_testGP = 20) %>%
   E_num_pop(pop_age_window) %>%
-  sapply(sum, na.rm = TRUE) %>%
-  format(digits = 3)
+  lapply(function(x)
+    data.frame(window = rownames(x),
+               x, check.names = FALSE) %>% melt())
+
+scenario1_counts <- multimerge(scenario1_counts, c("variable","window"))
+
+write.csv(scenario1_counts, "../../data cleaned/scenario1_counts_table.csv")
+
 
 
 # scenario 2a (test @ NPFS only) ---------------------------------------------
 
-scenario2a <-
+scenario2a_counts <-
   trans_mat %>%
   E_num_by_age_window(spec_NPFS = 0.64,
                       sens_NPFS = 0.96,
                       c_testNPFS = 20) %>%
   E_num_pop(pop_age_window) %>%
-  sapply(sum, na.rm = TRUE) %>%
-  format(digits = 3)
+  lapply(function(x)
+    data.frame(window = rownames(x),
+               x, check.names = FALSE) %>% melt())
+
+scenario2a_counts <- multimerge(scenario2a_counts, c("variable","window"))
+
+write.csv(scenario2a_counts, "../../data cleaned/scenario2a_counts_table.csv")
 
 
 # scenario 2b (test @ NPFS only AND obtain Rx increase) ----------------------
@@ -76,14 +74,21 @@ trans_mat2 <-
                        prob + (1 - prob)/2,
                        prob))
 
-scenario2b <-
-  trans_mat2 %>%
+
+scenario2b_counts <-
+  trans_mat %>%
   E_num_by_age_window(spec_NPFS = 0.64,
                       sens_NPFS = 0.96,
                       c_testNPFS = 20) %>%
   E_num_pop(pop_age_window) %>%
-  sapply(sum, na.rm = TRUE) %>%
-  format(digits = 3)
+  lapply(function(x)
+    data.frame(window = rownames(x),
+               x, check.names = FALSE) %>% melt())
+
+scenario2b_counts <- multimerge(scenario2b_counts, c("variable","window"))
+
+write.csv(scenario2b_counts, "../../data cleaned/scenario2b_counts_table.csv")
+
 
 
 # scenario 2c (test @ NPFS only AND switch from GP to NPFS) ---------------------
@@ -102,14 +107,19 @@ trans_mat2 <-
   select(from, to, everything()) %>%
   filter(complete.cases(.))
 
-scenario2c <-
-  trans_mat2 %>%
+scenario2c_counts <-
+  trans_mat %>%
   E_num_by_age_window(spec_NPFS = 0.64,
                       sens_NPFS = 0.96,
                       c_testNPFS = 20) %>%
   E_num_pop(pop_age_window) %>%
-  sapply(sum, na.rm = TRUE) %>%
-  format(digits = 3)
+  lapply(function(x)
+    data.frame(window = rownames(x),
+               x, check.names = FALSE) %>% melt())
+
+scenario2c_counts <- multimerge(scenario2c_counts, c("variable","window"))
+
+write.csv(scenario2c_counts, "../../data cleaned/scenario2c_counts_table.csv")
 
 
 # scenario 2d (test @ NPFS only AND NPFS use increase) -----------------------------------------
@@ -126,14 +136,20 @@ trans_mat2 <-
   select(from, to, everything()) %>%
   filter(complete.cases(.))
 
-scenario2d <-
-  trans_mat2 %>%
+
+scenario2d_counts <-
+  trans_mat %>%
   E_num_by_age_window(spec_NPFS = 0.64,
                       sens_NPFS = 0.96,
                       c_testNPFS = 20) %>%
   E_num_pop(pop_age_window) %>%
-  sapply(sum, na.rm = TRUE) %>%
-  format(digits = 3)
+  lapply(function(x)
+    data.frame(window = rownames(x),
+               x, check.names = FALSE) %>% melt())
+
+scenario2d_counts <- multimerge(scenario2d_counts, c("variable","window"))
+
+write.csv(scenario2d_counts, "../../data cleaned/scenario2d_counts_table.csv")
 
 
 

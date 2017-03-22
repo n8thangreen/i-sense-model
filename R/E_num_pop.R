@@ -21,13 +21,13 @@ E_num_pop <- function(num,
   rownames(pop2) <- pop2$NPFS_weeks_window
 
   row_match <- intersect(rownames(pop2),
-                         rownames(num[,,"p_flu"]))
+                         rownames(num[,,"flu"]))
 
   col_match <- intersect(colnames(pop2),
-                         colnames(num[,,"p_flu"]))
+                         colnames(num[,,"flu"]))
 
-  names_pop <- c("p_flu","ILI_NPFS","ILI_GP","new_NPFS","new_GP","collection_GP",
-                 "collection_NPFS","complete_Tx","complete_Tx_H1N1","p_H1N1","num_hosp","num death")
+  names_pop <- c("flu","ILI_NPFS","ILI_GP","new_NPFS","new_GP","collection_GP",
+                 "collection_NPFS","complete_Tx","complete_Tx_H1N1","SxH1N1","hosp","death")
 
   for (i in seq_along(names_pop)) {
 

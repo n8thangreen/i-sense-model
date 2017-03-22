@@ -75,10 +75,10 @@ NPFS_swab_pos <-
 
 # number ILI in England by time windows -----------------------------------
 
-ILI <-
+ILI_Dorigatti <-
   ILI_2009_2011_long %>%
   group_by(NPFS_weeks_window, age) %>%
-  dplyr::summarise(ILI = sum(ILI_England))
+  dplyr::summarise(ILI_Dorigatti = sum(ILI_England))
 
 
 # number ILI H1N1 to GP ---------------------------------------------------
@@ -114,7 +114,8 @@ notseekcare_H1N1 <-
   p.seekcare %>%
   merge(GP_swab_pos,
         by = "NPFS_weeks_window") %>%
-  mutate(Sx.notseekcare_H1N1 = (1 - p.seekcare)*p.GP_swab_pos) %>%
+  mutate(Sx.notseekcare_H1N1 = (1 - p.seekcare)*p.GP_swab_pos,
+         Sx.notseekcare_notH1N1 = (1 - p.seekcare)*(1 - p.GP_swab_pos)) %>%
   select(-p.seekcare, -p.GP_swab_pos)
 
 
@@ -122,7 +123,7 @@ notseekcare_H1N1 <-
 # join all  ---------------------------------------------------------------
 
 num_dat_ILI <-
-  ILI %>%
+  ILI_Dorigatti %>%
   merge(H1N1_GP, all = TRUE) %>%
   merge(auth_NPFS, all = TRUE) %>%
   merge(auth_GP, all = TRUE) %>%
@@ -152,28 +153,8 @@ num_dat_ILI <-
          Sx.NPFS_notH1N1 = notH1N1_NPFS/Sx,
          Sx.GP_notH1N1 = notH1N1_GP/Sx,
          notseekcare_H1N1 = Sx.notseekcare_H1N1*Sx,
+         notseekcare_notH1N1 = Sx.notseekcare_notH1N1*Sx,
          flu.Sx = Sx/flu,
          pop.flu = flu/pop)
-
-
-#  ------------------------------------------------------------------------
-#  transition probability matrix
-#  ------------------------------------------------------------------------
-
-trans_mat_ILI <-
-  num_dat_ILI %>%
-  reshape2::melt(id.vars = c("age", "NPFS_weeks_window"),
-                 variable.name = "fromto",
-                 value.name = "prob",
-                 measure.vars = c("Sx.GP_H1N1",
-                                  "Sx.NPFS_H1N1",
-                                  "Sx.NPFS_notH1N1",
-                                  "Sx.GP_notH1N1",
-                                  "Sx.notseekcare_H1N1",
-                                  "flu.Sx",
-                                  "pop.flu")) %>%
-  separate(fromto, c("from", "to"), "\\.") %>%
-  select(from, to, everything()) %>%
-  arrange(to)
 
 

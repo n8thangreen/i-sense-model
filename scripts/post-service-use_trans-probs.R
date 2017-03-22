@@ -32,38 +32,20 @@ dat.npfs <-
 num_dat_coll <-
   dat.npfs %>%
   group_by(NPFS_weeks_window, age) %>%
-  dplyr::summarise(num_coll = sum(coll),
-                   num_auth = sum(auth)) %>%
-  mutate(coll = num_coll/num_auth)
+  dplyr::summarise(coll_NPFS = sum(coll),
+                   auth_NPFS = sum(auth)) %>%
+  mutate(auth_GP.coll = coll_NPFS/auth_NPFS,
+         auth_NPFS.coll = auth_GP.coll)
 
-trans_mat_coll <-
+
+
+num_dat <-
   num_dat_coll %>%
-  melt(id.vars = c("age", "NPFS_weeks_window"),
-       measure.vars = "coll",
-       variable.name = "to",
-       value.name = "prob") %>%
-  data.frame(from = "auth_GP") %>%
-  select(from, to, everything())
-
-# duplicate from-GP for from-NPFS
-trans_mat_coll <-
-  trans_mat_coll %>%
-  select(-from) %>%
-  data.frame(from = "auth_NPFS") %>%
-  select(from, to, everything()) %>%
-  rbind(trans_mat_coll)
-
-
-
-#
-#
-##TODO##
-#
-trans_mat_coll
-merge(auth_NPFS
-      auth_GP)
-prob*auth_NPFS
-prob*auth_GP
+  select(-auth_NPFS) %>%
+  merge(num_dat_ILI, by = c("NPFS_weeks_window", "age")) %>%
+  mutate(coll_GP = auth_GP.coll*auth_GP,
+         coll_NPFS = ifelse(NPFS_weeks_window == 1,
+                            0, coll_NPFS))
 
 
 
@@ -72,30 +54,36 @@ prob*auth_GP
 num_dat_Tx <-
   usersurvey %>%
   group_by(age) %>%
-  dplyr::summarise(num_obtain = sum(obtainantivirals),
-                   num_start = sum(startedantivirals01),
-                   num_complete = sum(completedantivirals01)) %>%
-  mutate(coll.start = num_start/num_obtain,
-         start.complete = num_complete/num_start) %>%
+  dplyr::summarise(obtain = sum(obtainantivirals),
+                   start = sum(startedantivirals01),
+                   complete = sum(completedantivirals01)) %>%
+  mutate(coll.start = start/obtain,
+         start.complete = complete/start) %>%
   arrange(age) %>%
   select(age, everything()) %>%
   bind_rows(data.frame(age = "04",
                        filter(., age == "514")[-1])) %>%
   filter(complete.cases(.)) %>%
   slice(rep(1:n(), each = 3)) %>%
-  mutate(NPFS_weeks_window = rep(1:3, times = length(ageGroups)))
+  mutate(NPFS_weeks_window = rep(1:3, times = length(ageGroups))) %>%
+  select(-obtain, -start, -complete)
 
 
-trans_mat_Tx <-
-  num_dat_Tx %>%
-  melt(id.vars = c("age", "NPFS_weeks_window"),
-       measure.vars = c("coll.start", "start.complete"),
-       variable.name = "fromto",
-       value.name = "prob") %>%
-  separate(fromto, c("from", "to"), "\\.") %>%
-  select(from, to, everything())
-
-
+num_dat <-
+  num_dat %>%
+  merge(num_dat_Tx, by = c("NPFS_weeks_window", "age")) %>%
+  mutate(start_GP = coll.start*coll_GP,
+         start_NPFS = coll.start*coll_NPFS,
+         complete_GP = start.complete*start_GP,
+         complete_NPFS = start.complete*start_NPFS,
+         complete_NPFS_H1N1 = complete_NPFS*p.NPFS_swab_pos,
+         complete_GP_H1N1 = complete_GP*p.GP_swab_pos,
+         complete = complete_NPFS + complete_GP,
+         complete_H1N1 = complete_NPFS_H1N1 + complete_GP_H1N1,
+         Sx_H1N1 = H1N1_NPFS + H1N1_GP + notseekcare_H1N1,
+         notcomplete_NPFS_H1N1 = H1N1_NPFS - complete_NPFS_H1N1,
+         notcomplete_GP_H1N1 = H1N1_GP - complete_GP_H1N1,
+         SxH1N1_notcomplete = Sx_H1N1 - complete_H1N1)
 
 
 # hospitalisation ---------------------------------------------------------
@@ -130,29 +118,109 @@ num_dat_hosp <-
                hosp.death = 0.032)) %>%
   mutate(complete.hosp = start.hosp*completeTx.adj)
 
-trans_mat_hosp <-
-  num_dat_hosp %>%
-  melt(id.vars = c("age", "NPFS_weeks_window"),
-       variable.name = "fromto",
-       value.name = "prob") %>%
-  separate(fromto, c("from", "to"), "\\.") %>%
-  select(from, to, everything())
 
-
-
-trans_mat <- rbind(trans_mat_ILI,
-                   trans_mat_coll,
-                   trans_mat_Tx,
-                   trans_mat_hosp)
 
 num_dat <-
-  num_dat_ILI %>%
-  merge(num_dat_coll) %>%
-  merge(num_dat_Tx) %>%
-  merge(num_dat_hosp)
+  num_dat %>%
+  merge(num_dat_hosp, by = c("NPFS_weeks_window", "age")) %>%
+  mutate(complete_hosp = complete_H1N1*complete.hosp,
+         notcomplete_hosp = SxH1N1_notcomplete*ILI.hosp,
+         hosp = complete_hosp + notcomplete_hosp,
+         death = hosp*hosp.death)
 
 
-num_dat_counts <- num_dat[, !grepl("\\.", colnames(num_dat))]
-num_dat_probs <- num_dat[, grepl("(\\.)|NPFS_weeks_window|age", colnames(num_dat))]
+num_dat_counts <-
+  num_dat[, !grepl("\\.", colnames(num_dat))] %>%
+  select(NPFS_weeks_window, age,
+         pop,
+         flu,
+         Sx,
+         Sx_H1N1,
+         ILI_Dorigatti,
+         notseekcare_H1N1,
+         notseekcare_notH1N1,
+         seekcare,
+         auth_NPFS,
+         auth_GP,
+         H1N1_GP,
+         notH1N1_GP,
+         H1N1_NPFS,
+         notH1N1_NPFS,
+         coll_NPFS,
+         coll_GP,
+         start_GP,
+         start_NPFS,
+         complete_GP,
+         complete_NPFS,
+         complete,
+         complete_hosp,
+         notcomplete_hosp,
+         complete_NPFS_H1N1,
+         complete_GP_H1N1,
+         complete_H1N1,
+         notcomplete_NPFS_H1N1,
+         notcomplete_GP_H1N1,
+         SxH1N1_notcomplete,
+         hosp,
+         death)
 
+
+num_dat_probs <-
+  num_dat[, grepl("(\\.)|NPFS_weeks_window|age", colnames(num_dat))] %>%
+  select(NPFS_weeks_window, age,
+         pop.flu,
+         flu.Sx,
+         p.seekcare,
+         Sx.notseekcare_H1N1,
+         Sx.notseekcare_notH1N1,
+         Sx.GP_H1N1,
+         Sx.NPFS_H1N1,
+         Sx.NPFS_notH1N1,
+         Sx.GP_notH1N1,
+         auth_GP.coll,
+         auth_NPFS.coll,
+         p.GP_swab_pos,
+         p.NPFS_swab_pos,
+         coll.start,
+         start.complete,
+         ILI.hosp,
+         coll.hosp,
+         start.hosp,
+         complete.hosp,
+         hosp.death)
+
+
+#  ------------------------------------------------------------------------
+#  transition probability matrix
+#  ------------------------------------------------------------------------
+
+trans_mat <-
+  num_dat %>%
+  melt(id.vars = c("age", "NPFS_weeks_window"),
+       variable.name = "fromto",
+       value.name = "prob",
+       measure.vars = c("pop.flu",
+                        "flu.Sx",
+                        "Sx.GP_H1N1",
+                        "Sx.NPFS_H1N1",
+                        "Sx.NPFS_notH1N1",
+                        "Sx.GP_notH1N1",
+                        "Sx.notseekcare_H1N1",
+                        "Sx.notseekcare_notH1N1",
+                        "auth_NPFS.coll",
+                        "auth_GP.coll",
+                        "coll.start",
+                        "start.complete",
+                        "complete.hosp",
+                        "ILI.hosp",
+                        "coll.hosp",
+                        "start.hosp",
+                        "hosp.death")) %>%
+  separate(fromto, c("from", "to"), "\\.") %>%
+  select(from, to, everything()) %>%
+  arrange(to)
+
+
+write.csv(num_dat_counts, file = "../../data cleaned/num_dat_counts.csv")
+write.csv(num_dat_probs, file = "../../data cleaned/num_dat_probs.csv")
 
