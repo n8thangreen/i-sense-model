@@ -10,6 +10,7 @@
 #' @param sens_GP
 #' @param c_testNPFS
 #' @param c_testGP
+#' @param ...
 #'
 #' @return
 #' @export
@@ -30,7 +31,8 @@ Ec_by_age_window <- function(trans_mat,
                              spec_GP = 0,
                              sens_GP = 1,
                              c_testNPFS = 0,
-                             c_testGP = 0){
+                             c_testGP = 0,
+                             ...){
 
   AGE <- unique(trans_mat$age)
   AGE <- AGE[!AGE %in% c("overall", "total", NA)]
@@ -61,8 +63,8 @@ Ec_by_age_window <- function(trans_mat,
                              p_flu = prob[from == "pop" & to == "flu"],
 
                              # treatment
-                             p_GP.collect = prob[from == "GP" & to == "coll"],
-                             p_NPFS.collect = prob[from == "NPFS" & to == "coll"],###
+                             p_GP.collect = prob[from == "auth_GP" & to == "coll"],
+                             p_NPFS.collect = prob[from == "auth_NPFS" & to == "coll"],
                              p_start = prob[from == "coll" & to == "start"],
                              p_complete = prob[from == "start" & to == "complete"],
                              p_hosp = prob[from == "ILI" & to == "hosp"],
@@ -80,7 +82,8 @@ Ec_by_age_window <- function(trans_mat,
                              c_testGP = c_testGP,
 
                              # QALY loss
-                             Q_excess_life = excess_life_QALYs(AGE[j]))
+                             Q_excess_life = excess_life_QALYs(AGE[j]),
+                             ...)
       ), silent = TRUE)
     }
   }

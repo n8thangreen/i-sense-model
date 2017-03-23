@@ -90,7 +90,7 @@ num_dat <-
 
 # impact of outpatient neuraminidase inhibitor treatment on hospitalisation in patients
 # infected with influenza A (H1N1)pdm09: An IPD analysis
-# S. Venkatesan∗, P.R. Myles et al
+# S. Venkatesan, P.R. Myles et al
 completeTx.adj <- 0.52
 
 

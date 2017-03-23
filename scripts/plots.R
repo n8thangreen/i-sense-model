@@ -100,50 +100,56 @@ contour(z = maxCost_scenario2d,
 
 # INMB for fixed costs -----------------------------------------------------
 
-INMBout <- array(data = NA,
-                 dim = c(length(spec.seq), length(sens.seq)),
-                 dimnames = list(spec.seq, sens.seq))
 c_index <- c(1,2,3,4)
 
-for (i in seq_along(spec.seq)) {
-  for (j in seq_along(sens.seq)) {
+INMBout1 <-
+  INMBout2a <-
+  INMBout2b <-
+  INMBout2c <- array(data = NA,
+                 dim = c(length(spec.seq), length(sens.seq), length(c_index)),
+                 dimnames = list(spec.seq, sens.seq, c_index))
 
-    INMBout1[i,j] <-
-      INMB(QALYgain = scenario0["e"] - scenario2d[i,j,c_index ,"e"],
-           cost_incurred = scenario2d[i,j,c_index ,"c"] - scenario0["c"])
+for (k in seq_along(c_index)) {
+  for (i in seq_along(spec.seq)) {
+    for (j in seq_along(sens.seq)) {
 
-    INMBout2[i,j] <-
-      INMB(QALYgain = scenario0["e"] - scenario2d[i,j,c_index ,"e"],
-           cost_incurred = scenario2d[i,j,c_index ,"c"] - scenario0["c"])
+      INMBout1[i,j,k] <-
+        INMB(QALYgain = scenario0["e"] - scenario1[i,j,c_index[k] ,"e"],
+             cost_incurred = scenario1[i,j,c_index[k] ,"c"] - scenario0["c"])
 
-    INMBout3[i,j] <-
-      INMB(QALYgain = scenario0["e"] - scenario2d[i,j,c_index ,"e"],
-           cost_incurred = scenario2d[i,j,c_index ,"c"] - scenario0["c"])
+      INMBout2a[i,j,k] <-
+        INMB(QALYgain = scenario0["e"] - scenario2a[i,j,c_index[k] ,"e"],
+             cost_incurred = scenario2a[i,j,c_index[k] ,"c"] - scenario0["c"])
 
-    INMBout4[i,j] <-
-      INMB(QALYgain = scenario0["e"] - scenario2d[i,j,c_index ,"e"],
-           cost_incurred = scenario2d[i,j,c_index ,"c"] - scenario0["c"])
+      INMBout2b[i,j,k] <-
+        INMB(QALYgain = scenario0["e"] - scenario2b[i,j,c_index[k] ,"e"],
+             cost_incurred = scenario2b[i,j,c_index[k] ,"c"] - scenario0["c"])
+
+      INMBout2c[i,j,k] <-
+        INMB(QALYgain = scenario0["e"] - scenario2c[i,j,c_index ,"e"],
+             cost_incurred = scenario2c[i,j,c_index[k] ,"c"] - scenario0["c"])
+    }
   }
 }
 
 par(mfrow = c(2,2))
 
-filled.contour(z = apply(INMBout1, 1, rev),
+filled.contour(z = apply(INMBout1[,,1,], 1, rev),
                xlab = "Sensitivity",
                ylab = "Specificity",
                color.palette = terrain.colors)
 
-filled.contour(z = apply(INMBout2, 1, rev),
+filled.contour(z = apply(INMBout2a[,,1,], 1, rev),
                xlab = "Sensitivity",
                ylab = "Specificity",
                color.palette = terrain.colors)
 
-filled.contour(z = apply(INMBout3, 1, rev),
+filled.contour(z = apply(INMBout2b[,,1,], 1, rev),
                xlab = "Sensitivity",
                ylab = "Specificity",
                color.palette = terrain.colors)
 
-filled.contour(z = apply(INMBout4, 1, rev),
+filled.contour(z = apply(INMBout2c[,,1,], 1, rev),
                xlab = "Sensitivity",
                ylab = "Specificity",
                color.palette = terrain.colors)

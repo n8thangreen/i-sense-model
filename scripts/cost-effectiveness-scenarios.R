@@ -9,9 +9,9 @@
 library(magrittr)
 
 
-spec.seq  <- seq(0, 1, 0.1)
-sens.seq  <- seq(0, 1, 0.1)
-c_test.seq <- seq(0, 5, 1)
+spec.seq  <- seq(0, 1, 0.05)
+sens.seq  <- seq(0, 1, 0.05)
+c_test.seq <- seq(0, 5, 0.5)
 
 
 # duplicate for each week window
@@ -25,7 +25,7 @@ pop_age_window <-
 
 scenario0 <-
   trans_mat %>%
-  Ec_by_age_window() %>%
+  Ec_by_age_window() %>%j
   Ec_pop(pop_age_window) %>%
   sapply(sum, na.rm = TRUE)
 
@@ -51,6 +51,8 @@ for (i in seq_along(spec.seq)) {
   }
 }
 
+save(scenario1, file = "../../data cleaned/scenario1_costeffective.RData")
+
 
 # scenario 2a (test @ NPFS only) ---------------------------------------------
 
@@ -73,6 +75,7 @@ for (i in seq_along(spec.seq)) {
   }
 }
 
+save(scenario2a, file = "../../data cleaned/scenario2a_costeffective.RData")
 
 
 # scenario 2b (test @ NPFS only AND obtain Rx increase) ----------------------
@@ -102,6 +105,7 @@ for (i in seq_along(spec.seq)) {
   }
 }
 
+save(scenario2b, file = "../../data cleaned/scenario2b_costeffective.RData")
 
 
 # scenario 2c (test @ NPFS only AND switch from GP to NPFS) ---------------------
@@ -143,6 +147,7 @@ for (i in seq_along(spec.seq)) {
   }
 }
 
+save(scenario2c, file = "../../data cleaned/scenario2c_costeffective.RData")
 
 
 # scenario 2d (test @ NPFS only AND NPFS use increase) -----------------------------------------
@@ -184,4 +189,5 @@ for (i in seq_along(spec.seq)) {
   }
 }
 
+save(scenario2d, file = "../../data cleaned/scenario2d_costeffective.RData")
 

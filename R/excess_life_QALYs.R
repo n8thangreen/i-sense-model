@@ -18,10 +18,10 @@
 #'
 excess_life_QALYs <- function(AGE) {
 
-  life_expectancy <- read.csv("C:/Users/Nathan/Dropbox/i-sense/data raw/agegroup_excess-life-expectancy.csv",
+  life_expectancy <- read.csv("../../data raw/agegroup_excess-life-expectancy.csv",
                               colClasses = c("character", "numeric", "numeric", "numeric"))
 
-  QoL_age <- read.csv("C:/Users/Nathan/Dropbox/i-sense/data raw/QoL_age.csv",
+  QoL_age <- read.csv("../../data raw/QoL_age.csv",
                       colClasses = c("character", "numeric"))
 
   rownames(QoL_age) <- QoL_age$age
