@@ -22,6 +22,16 @@ load(file = "../../data cleaned/data_positiveILI_NPFS_perrine_feb2017.RData")
 load(file = "../../R/Ilarias-model/H1N1model/data/pop_age.RData")
 
 
+ageGroups <- c("04", "514", "1524", "2544", "4564", "65.")
+
+
+# duplicate for each week window
+pop_age_window <-
+  pop_age %>%
+  slice(rep(1:n(), each = 3)) %>%
+  mutate(NPFS_weeks_window = rep(1:3, times = n()/3))
+
+
 ## are the start and end dates the same for all data sets?
 # testthat::is_equivalent_to()
 
@@ -37,10 +47,20 @@ dat.posILI.GP <- filter(dat.posILI.GP, week >= FIRST_WEEK, week <= LAST_WEEK)
 dat.posILI.NPFS <- filter(dat.posILI.NPFS, week >= FIRST_WEEK, week <= LAST_WEEK)
 dat.npfs <- filter(dat.npfs, week >= FIRST_WEEK, week <= LAST_WEEK)
 
+#test array lengths
+# lapply(list(ILI_2009_2011_long,
+#             H1N1_long,
+#             ILI_diag_long,
+#             usersurvey,
+#             dat.posILI.GP,
+#             dat.posILI.NPFS,
+#             dat.npfs),
+#        FUN = function(x) c(min(x['week']), max(x['week'])))
 
 ##TODO## Using an online survey of healthcare-seeking behaviour to estimate () Brooks-Pollock
 
 # FluWatch. (Hayward et al., 2014)
+# suppl material p. 7 section 4) (file:///C:/Users/nathan.green.PHE/Dropbox/docs/mmc1%20(1).pdf)
 p.seekcare <- data.frame(NPFS_weeks_window = c(1, 2, 3),
                          p.seekcare = c(0.172, 0.172, 0.172))
 
@@ -48,6 +68,17 @@ p.seekcare <- data.frame(NPFS_weeks_window = c(1, 2, 3),
 dat.posILI.GP <-
   dat.posILI.GP %>%
   rename(auth_GP = estim.consult)
+
+
+
+
+p.H1N1 <-
+  data.frame(age = ageGroups,
+             p.H1N1_baseline = c(0.018, 0.037, 0.175, 0.089, 0.143, 0.23),      # Incidence of 2009 pandemic influenza A H1N1 infection in England: a cross-sectional serological study, Elizabeth Miller
+             post_2nd_wave = c(0.37, 0.62, 0.44, 0.33, 0.27, 0.25)) %>%   # Seroprevalence of Influenza A(H1N1) pdm09 Virus Antibody, England, 2010 and 2011, Katja Hoschler
+  mutate(p.H1N1 = post_2nd_wave - p.H1N1_baseline)
+
+
 
 
 # swabbing positivity/negativity ------------------------------------------
@@ -105,7 +136,9 @@ auth_GP <-
   dplyr::summarise(auth_GP = sum(auth_GP))
 
 
-PROP_ILI_SYMP <- 0.669 # (58.3, 74.5) # Time lines of infection..., Carrat (2008)
+PROP_ILI_SYMP <- 0.16 # FluWatch suppl material p. 6 section 2) (file:///C:/Users/nathan.green.PHE/Dropbox/docs/mmc1%20(1).pdf)
+# PROP_ILI_SYMP <- 0.669 # (58.3, 74.5) # Time lines of infection..., Carrat (2008) Human challenge study
+
 
 
 # prop H1N1 Sx who _don't_ seek care ----------------------------------------
@@ -131,10 +164,12 @@ num_dat_ILI <-
   merge(NPFS_swab_pos, all = TRUE) %>%
   merge(notseekcare_H1N1, all = TRUE) %>%
   merge(pop_age, all = TRUE) %>%
-  merge(p.seekcare)
+  merge(p.seekcare) %>%
+  merge(p.H1N1)
 
 
 num_dat_ILI[is.na(num_dat_ILI)] <- 0
+
 
 
 # combined estimates ------------------------------------------------------
@@ -146,6 +181,12 @@ num_dat_ILI <-
          H1N1_NPFS = auth_NPFS * p.NPFS_swab_pos,
          notH1N1_NPFS = auth_NPFS * (1 - p.NPFS_swab_pos),
          seekcare = auth_NPFS + auth_GP,
+         H1N1_seekcare = H1N1_GP + H1N1_NPFS,
+         H1N1 = p.H1N1 * pop,
+         Sx_H1N1 = H1N1 * PROP_ILI_SYMP,
+         p.seekcare = H1N1_seekcare/Sx_H1N1,
+         p.seekcare_Sx = H1N1_seekcare/H1N1,
+         # p.seekcare = H1N1_seekcare/Sx_H1N1,
          Sx = seekcare/p.seekcare,
          flu = Sx/PROP_ILI_SYMP,
          Sx.GP_H1N1 = H1N1_GP/Sx,
@@ -156,5 +197,6 @@ num_dat_ILI <-
          notseekcare_notH1N1 = Sx.notseekcare_notH1N1*Sx,
          flu.Sx = Sx/flu,
          pop.flu = flu/pop)
+
 
 

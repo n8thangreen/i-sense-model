@@ -7,6 +7,7 @@
 #' * other than 3.5\% discount
 #'
 #' @param AGE Age group from "04", "514", "1524", "2544", "4564", "65."
+#' @param DISCOUNT Rate per year 0 - 1
 #'
 #' @return
 #' @export
@@ -16,12 +17,13 @@
 #' excess_life_QALYs("2544")
 #' excess_life_QALYs("4564")
 #'
-excess_life_QALYs <- function(AGE) {
+excess_life_QALYs <- function(AGE,
+                              DISCOUNT = 0.035) {
 
-  life_expectancy <- read.csv("../../data raw/agegroup_excess-life-expectancy.csv",
+  life_expectancy <- read.csv(file = "../../data raw/agegroup_excess-life-expectancy.csv",
                               colClasses = c("character", "numeric", "numeric", "numeric"))
 
-  QoL_age <- read.csv("../../data raw/QoL_age.csv",
+  QoL_age <- read.csv(file = "../../data raw/QoL_age.csv",
                       colClasses = c("character", "numeric"))
 
   rownames(QoL_age) <- QoL_age$age
@@ -32,12 +34,13 @@ excess_life_QALYs <- function(AGE) {
 
   # from age group to continuous then back again
   mid_age <- life_expectancy$mid_age[life_expectancy$age == AGE]
-  ages.seq <- cut(mid_age + 1:years, breaks = c(-1, life_expectancy$max_age))
-  ages.seq <- plyr::mapvalues(ages.seq,
+  ages.seq <- cut(x = mid_age + 1:years,
+                  breaks = c(-1, life_expectancy$max_age))
+  ages.seq <- plyr::mapvalues(x = ages.seq,
                               from = c("(-1,4]", "(4,14]", "(14,24]", "(24,44]", "(44,64]", "(64,100]"),
                               to = c("04", "514", "1524", "2544", "4564", "65."))
 
   QoL <- QoL_age[ages.seq, "QoL"]
 
-  return(sum(QoL/(1 + 0.035)^seq(0, years - 1)))
+  return(sum(QoL/(1 + DISCOUNT)^seq(0, years - 1)))
 }

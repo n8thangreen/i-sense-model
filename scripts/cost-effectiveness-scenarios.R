@@ -14,13 +14,6 @@ sens.seq  <- seq(0, 1, 0.05)
 c_test.seq <- seq(0, 5, 0.5)
 
 
-# duplicate for each week window
-pop_age_window <-
-  pop_age %>%
-  slice(rep(1:n(), each = 3)) %>%
-  mutate(NPFS_weeks_window = rep(1:3, times = n()/3))
-
-
 # scenario 0 (status-quo) -------------------------------------------------
 
 scenario0 <-

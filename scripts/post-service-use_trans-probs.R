@@ -12,8 +12,6 @@ library(reshape2)
 load("../../R/Ilarias-model/H1N1model/data/dates_lookup.RData")
 
 
-ageGroups <- c("04", "514", "1524", "2544", "4564", "65.")
-
 
 # duplicate first NPFS week for missing pre-NPFS weeks --------------------
 
@@ -80,7 +78,7 @@ num_dat <-
          complete_GP_H1N1 = complete_GP*p.GP_swab_pos,
          complete = complete_NPFS + complete_GP,
          complete_H1N1 = complete_NPFS_H1N1 + complete_GP_H1N1,
-         Sx_H1N1 = H1N1_NPFS + H1N1_GP + notseekcare_H1N1,
+         # Sx_H1N1 = H1N1_NPFS + H1N1_GP + notseekcare_H1N1,
          notcomplete_NPFS_H1N1 = H1N1_NPFS - complete_NPFS_H1N1,
          notcomplete_GP_H1N1 = H1N1_GP - complete_GP_H1N1,
          SxH1N1_notcomplete = Sx_H1N1 - complete_H1N1)
