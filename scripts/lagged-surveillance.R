@@ -4,81 +4,124 @@ library(ggplot2)
 library(magrittr)
 library(dplyr)
 library(reshape2)
+library(gridExtra)
 
 
-load("../../data raw/data_positiveILI_NPFS_perrine_march2017.RData")
-load("../../data raw/data_positiveILI_GP_perrine_march2017.RData")
+load(file = "../../data cleaned/data_positiveILI_GP_perrine_feb2017.RData")
+load(file = "../../data cleaned/data_positiveILI_NPFS_perrine_feb2017.RData")
+
+# with swabbing C.I.s
+# load("../../data raw/data_positiveILI_NPFS_perrine_march2017.RData")
+# load("../../data raw/data_positiveILI_GP_perrine_march2017.RData")
 
 load("C:/Users/Nathan/Dropbox/i-sense/R/Ilarias-model/H1N1model/data/dates_lookup.RData")
 
-##TODO##
 
-# use previous swabbing data set os dont use CIS anymore
+posILI.GP <-
+  dat.posILI.GP %>%
+  group_by(week) %>%
+  dplyr::summarise(posILI_GP = sum(posILI),
+                   auth_GP = sum(estim.consult))
+posILI.NPFS <-
+  dat.posILI.NPFS %>%
+  group_by(week) %>%
+  dplyr::summarise(posILI_NPFS = sum(posILI),
+                   auth_NPFS = sum(authorisations))
 
+dat <-
+  posILI.GP %>%
+  merge(posILI.NPFS, by = "week", all = TRUE) %>%
+  rowwise() %>%
+  mutate(posILI = sum(c(posILI_GP, posILI_NPFS), na.rm = TRUE),
+         auth = sum(c(auth_GP, auth_NPFS), na.rm = TRUE))
 
 
 dat <-
-  dat.posILI.NPFS %>%
-  filter(ageGP.fac == "25-44",
-         w < 24) %>%
-  select(-ageGP.fac) %>%
-  mutate(negILI = authorisations - posILI,
-         hi_PCTposILI = qbinom(p = 0.975, size = round(posILI), prob = 0.9), #upper-bound positive after test
-         lo_PCTposILI = qbinom(p = 0.025, size = round(posILI), prob = 0.9), #lower-bound positive after test
-         hi_PCTnegILI = qbinom(p = 0.975, size = round(negILI), prob = 0.3), #upper-bound positive after test
-         lo_PCTnegILI = qbinom(p = 0.025, size = round(negILI), prob = 0.3), #lower-bound positive after test
+  dat %>%
+  mutate(negILI = auth - posILI,
+         hi_PCTposILI = qbinom(p = 0.975, size = round(posILI), prob = 0.73), #upper-bound positive after test
+         lo_PCTposILI = qbinom(p = 0.025, size = round(posILI), prob = 0.73), #lower-bound positive after test
+         hi_PCTnegILI = qbinom(p = 0.975, size = round(negILI), prob = 0.04), #upper-bound positive after test
+         lo_PCTnegILI = qbinom(p = 0.025, size = round(negILI), prob = 0.04), #lower-bound positive after test
          hi_PCT = hi_PCTposILI + hi_PCTnegILI,
          lo_PCT = lo_PCTposILI + lo_PCTnegILI)
 
 # join with week lookup
 dat <-
   dat %>%
-  rename(NPFS_weeks = w) %>%
-  merge(dates_lookup) %>%
+  merge(dates_lookup, all = TRUE) %>%
   mutate(week_end = as.Date(week_end))
 
+
+dat <- dat[1:50, ]
 
 # sample
 # rbinom(n = 10000, size = 56332, prob = 0.3) %>%
 #   quantile(c(0.025, 0.975))
 
 
+subdat <- list()
+week_cuts <- c(6, 12, 18, 37)
 
+for (i in seq_along(week_cuts)) {
 
-dat2 <- dat
-dat2[dat2$NPFS_weeks > 13, c("authorisations", "hi_PCTposILI", "lo_PCTposILI",
-                             "hi_PCTnegILI", "lo_PCTnegILI", "hi_PCT", "lo_PCT")] <- NA
+  subdat[[i]] <- dat
+  subdat[[i]][subdat[[i]]$NPFS_weeks > week_cuts[i] + 2, c("auth", "hi_PCTposILI", "lo_PCTposILI",
+                                             "hi_PCTnegILI", "lo_PCTnegILI", "hi_PCT", "lo_PCT")] <- NA
 
-dat2[dat2$NPFS_weeks > 11, c("posILI", "posILI.lo", "posILI.hi", "negILI")] <- NA
+  subdat[[i]][subdat[[i]]$NPFS_weeks > week_cuts[i], c("posILI", "negILI")] <- NA # "posILI.lo", "posILI.hi",
 
-# dat2[dat2$NPFS_weeks < 11, c("hi_PCTposILI", "lo_PCTposILI",
-#                              "hi_PCTnegILI", "lo_PCTnegILI", "hi_PCT", "lo_PCT")] <- NA
+  # subdat[[i]][subdat[[i]]$NPFS_weeks < 11, c("hi_PCTposILI", "lo_PCTposILI",
+  #                              "hi_PCTnegILI", "lo_PCTnegILI", "hi_PCT", "lo_PCT")] <- NA
+}
 
 
 # plots
 
+surveill_plot <- function(DATA,
+                          x_axis_labels = FALSE,
+                          TITLE = "") {
 
-ggplot(data = dat2) + theme_bw() +
-  # geom_ribbon(aes(x = w, ymin = posILI.lo, ymax = posILI.hi),
-  #             fill = "blue", alpha = 0.25) +
-  geom_line(aes(x = week_end, y = posILI), color = "black", linetype = "dashed") +
-  # geom_line(aes(x = w, y = negILI), color = "grey", linetype = "dashed") +
-  geom_line(aes(x = week_end, y = authorisations), color = "black") +
-  # geom_ribbon(aes(x = w, ymin = posILI, ymax = hi_PCTnegILI + hi_PCTposILI),
-  #             fill = "red", alpha = 0.25)
-  geom_ribbon(aes(x = week_end, ymin = lo_PCTposILI, ymax = lo_PCTnegILI + lo_PCTposILI),
-              fill = "blue", alpha = 0.25) +
-  geom_ribbon(aes(x = week_end, ymin = 0, ymax = lo_PCTposILI),
-              fill = "red", alpha = 0.25) +
-  geom_vline(xintercept = 11, linetype = "dotted")
-  # geom_ribbon(aes(x = w, ymin = lo_PCT, ymax = hi_PCT),
-  #             fill = "red", alpha = 0.25) +
-  # geom_ribbon(aes(x = w, ymin = 0, ymax = hi_PCTnegILI),
-  #             fill = "blue", alpha = 0.25) +
-  # geom_ribbon(aes(x = w, ymin = lo_PCTnegILI, ymax = hi_PCTnegILI),
-  #             fill = "blue", alpha = 0.25) +
-  # geom_ribbon(aes(x = w, ymin = lo_PCTposILI, ymax = posILI),
-  #             fill = "green", alpha = 0.25) +
-  # geom_ribbon(aes(x = w, ymin = lo_PCTposILI, ymax = hi_PCTposILI),
-  #             fill = "green", alpha = 0.25) #+ ylim(0, 25000)
+  gg <- ggplot(data = DATA) + theme_minimal() +
+    ylab("Population") + xlab("Date") +
+    geom_line(aes(x = week_end, y = posILI), color = "black", linetype = "dashed") +
+    geom_line(aes(x = week_end, y = auth), color = "black") +
+    geom_ribbon(aes(x = week_end, ymin = lo_PCTposILI, ymax = lo_PCTnegILI + lo_PCTposILI),
+                fill = "blue", alpha = 0.25) +
+    geom_ribbon(aes(x = week_end, ymin = 0, ymax = lo_PCTposILI),
+                fill = "red", alpha = 0.25) +
+    labs(title = TITLE)
 
+  if (!x_axis_labels) {
+    gg <- gg + theme(axis.title.x = element_blank(),
+                     axis.text.x = element_blank(),
+                     axis.ticks.x = element_blank())}
+
+  gg
+
+
+  #+
+    # theme(axis.title.y = element_blank(),
+    #       axis.text.y = element_blank(),
+    #       axis.ticks.y = element_blank()) #+
+  #  scale_colour_manual("", values = "blue")+
+    # scale_fill_manual("", values = "grey12")+
+   # scale_fill_manual(values = c("#999999", "#E69F00", "#56B4E9"),
+   #                       name = "Experimental\nCondition",
+   #                       breaks = c("ctrl", "trt1", "trt2"),
+   #                       labels = c("Control", "Treatment 1", "Treatment 2"))+
+
+}
+
+
+pdf("plots/surveillance_grid_plot.pdf")
+tiff('plots/surveillance_grid_plot.tiff', units = "in", width = 20, height = 20, res = 300)
+
+gridExtra::grid.arrange(
+  surveill_plot(subdat[[1]], TITLE = "(a)"),
+  surveill_plot(subdat[[2]], TITLE = "(b)"),
+  surveill_plot(subdat[[3]], TITLE = "(c)"),
+  surveill_plot(subdat[[4]], x_axis_labels = TRUE, TITLE = "(d)"),
+  ncol = 1)
+
+dev.off()

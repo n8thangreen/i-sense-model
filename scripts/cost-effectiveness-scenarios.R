@@ -25,7 +25,7 @@ pop_age_window <-
 
 scenario0 <-
   trans_mat %>%
-  Ec_by_age_window() %>%j
+  Ec_by_age_window() %>%
   Ec_pop(pop_age_window) %>%
   sapply(sum, na.rm = TRUE)
 

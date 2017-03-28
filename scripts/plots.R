@@ -28,7 +28,7 @@ maxCost_scenario2d <- maxCost(scenario2d, scenario0)
 
 s1 <- lattice::levelplot(maxCost_scenario1,
                    xlab = "Specificity", ylab = "Sensitivity",
-                   at = seq(0,5,0.5),
+                   at = seq(0,10,0.5),
                    main = "scenario 1",
                    col.regions = gray(1 - 0:100/200)#,
                    # panel = function(...){
@@ -37,7 +37,7 @@ s1 <- lattice::levelplot(maxCost_scenario1,
 
 s2 <- lattice::levelplot(maxCost_scenario2a,
                    xlab = "Specificity", ylab = "Sensitivity",
-                   at = seq(0,5,0.5),
+                   at = seq(0,10,0.5),
                    main = "scenario 2a",
                    col.regions = gray(1 - 0:100/200)#,
                    # panel = function(...){
@@ -46,7 +46,7 @@ s2 <- lattice::levelplot(maxCost_scenario2a,
 
 s3 <- lattice::levelplot(maxCost_scenario2b,
                    xlab = "Specificity", ylab = "Sensitivity",
-                   at = seq(0,5,0.5),
+                   at = seq(0,10,0.5),
                    main = "scenario 2b",
                    col.regions = gray(1 - 0:100/200)#,
                    # panel = function(...){
@@ -55,7 +55,7 @@ s3 <- lattice::levelplot(maxCost_scenario2b,
 
 s4 <- lattice::levelplot(maxCost_scenario2c,
                    xlab = "Specificity", ylab = "Sensitivity",
-                   at = seq(0,5,0.5),
+                   at = seq(0,10,0.5),
                    main = "scenario 2c",
                    col.regions = gray(1 - 0:100/200)#,
                    # panel = function(...){
@@ -64,7 +64,7 @@ s4 <- lattice::levelplot(maxCost_scenario2c,
 
 s5 <- lattice::levelplot(maxCost_scenario2d,
                    xlab = "Specificity", ylab = "Sensitivity",
-                   at = seq(0,5,0.5),
+                   at = seq(0,10,0.5),
                    main = "scenario 2d",
                    col.regions = gray(1 - 0:100/200)#,
                    # panel = function(...){
