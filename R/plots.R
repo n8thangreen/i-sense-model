@@ -1,13 +1,33 @@
-# plots
 
-
+#' INMB
+#'
+#' @param QALYgain
+#' @param cost_incurred
+#' @param wtp Default to £30,000/QALY
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 INMB <- function(QALYgain,
                  cost_incurred,
                  wtp = 30000){
-  QALYgain*wtp - cost_incurred
+
+  (QALYgain*wtp) - cost_incurred
 }
 
 
+#' maxCost
+#'
+#' @param interv
+#' @param status_quo
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 maxCost <- function(interv,
                     status_quo) {
 

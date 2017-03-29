@@ -93,6 +93,7 @@ Ec_ILI <-  function(p_GP.H1N1 = 0.1,
                     p_notseekcare_H1N1 = 0.1,
                     p_Sx = 0.5,
                     p_flu = 0.1,
+                    p_GP.Rx = 0.3,
 
                     # treatment
                     p_GP.collect = 0.5,
@@ -126,11 +127,11 @@ Ec_ILI <-  function(p_GP.H1N1 = 0.1,
   ## cost incurred ##
 
   # H1N1
-  Ec_hospH1N1 <- c_death*p_death + (1 - p_death)*0 + c_hosp
+  Ec_hospH1N1 <- c_death*p_death + c_hosp
 
   Ec_negH1N1 <- p_hosp*Ec_hospH1N1
 
-  Ec_completeH1N1 <- Ec_hospH1N1*p_hosp_complete + (1 - p_hosp_complete)*0
+  Ec_completeH1N1 <- Ec_hospH1N1*p_hosp_complete
 
   Ec_startH1N1 <- Ec_completeH1N1*p_complete + Ec_negH1N1*(1 - p_complete)
 
@@ -140,14 +141,14 @@ Ec_ILI <-  function(p_GP.H1N1 = 0.1,
 
   Ec_NPFS.posH1N1 <- Ec_collH1N1*p_NPFS.collect + (1 - p_NPFS.collect)*Ec_negH1N1
 
-  Ec_GP.H1N1 <- sens_GP*Ec_GP.posH1N1 + (1 - sens_GP)*Ec_negH1N1 + c_testGP + c_GP
+  Ec_GP.H1N1 <- p_GP.Rx*(sens_GP*Ec_GP.posH1N1 + (1 - sens_GP)*Ec_negH1N1) + (1 - p_GP.Rx)*Ec_negH1N1 + c_testGP + c_GP
 
   Ec_NPFS.H1N1 <- sens_NPFS*Ec_NPFS.posH1N1 + (1 - sens_NPFS)*Ec_negH1N1 + c_testNPFS + c_NPFS
 
   Ec_notseekcare_H1N1 <- Ec_negH1N1
 
   # non-H1N1
-  Ec_GP.notH1N1 <- (1 - spec_GP)*c_collect*p_GP.collect + c_testGP + c_GP
+  Ec_GP.notH1N1 <- p_GP.Rx*(1 - spec_GP)*p_GP.collect*c_collect + c_testGP + c_GP
 
   Ec_NPFS.notH1N1 <- (1 - spec_NPFS)*c_collect*p_NPFS.collect + c_testNPFS + c_NPFS
 
@@ -183,7 +184,7 @@ Ec_ILI <-  function(p_GP.H1N1 = 0.1,
   Eq_notseekcare_H1N1 <- Eq_negH1N1
 
   # non-H1N1
-  Eq_GP.H1N1 <- sens_GP*Eq_GP.posH1N1 + (1 - sens_GP)*Eq_negH1N1
+  Eq_GP.H1N1 <- p_GP.Rx*(sens_GP*Eq_GP.posH1N1 + (1 - sens_GP)*Eq_negH1N1) + (1 - p_GP.Rx)*Eq_negH1N1
 
   Eq_GP.notH1N1 <- 0
 

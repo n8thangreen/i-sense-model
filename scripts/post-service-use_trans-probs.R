@@ -32,19 +32,17 @@ num_dat_coll <-
   group_by(NPFS_weeks_window, age) %>%
   dplyr::summarise(coll_NPFS = sum(coll),
                    auth_NPFS = sum(auth)) %>%
-  mutate(auth_GP.coll = coll_NPFS/auth_NPFS,
-         auth_NPFS.coll = auth_GP.coll)
-
+  mutate(auth_NPFS.coll = coll_NPFS/auth_NPFS,
+         Rx_GP.coll = auth_NPFS.coll)
 
 
 num_dat <-
   num_dat_coll %>%
   select(-auth_NPFS) %>%
   merge(num_dat_ILI, by = c("NPFS_weeks_window", "age")) %>%
-  mutate(coll_GP = auth_GP.coll*auth_GP,
+  mutate(coll_GP = Rx_GP.coll*Rx_GP,
          coll_NPFS = ifelse(NPFS_weeks_window == 1,
                             0, coll_NPFS))
-
 
 
 # complete treatment ----------------------------------------------------
@@ -175,7 +173,7 @@ num_dat_probs <-
          Sx.NPFS_H1N1,
          Sx.NPFS_notH1N1,
          Sx.GP_notH1N1,
-         auth_GP.coll,
+         Rx_GP.coll,
          auth_NPFS.coll,
          p.GP_swab_pos,
          p.NPFS_swab_pos,
@@ -206,7 +204,7 @@ trans_mat <-
                         "Sx.notseekcare_H1N1",
                         "Sx.notseekcare_notH1N1",
                         "auth_NPFS.coll",
-                        "auth_GP.coll",
+                        "Rx_GP.coll",
                         "coll.start",
                         "start.complete",
                         "complete.hosp",
