@@ -25,7 +25,7 @@ load(file = "../../R/Ilarias-model/H1N1model/data/pop_age.RData")
 ageGroups <- c("04", "514", "1524", "2544", "4564", "65.")
 
 
-# duplicate for each week window
+# duplicate for each week window 1,2,3
 pop_age_window <-
   pop_age %>%
   slice(rep(1:n(), each = 3)) %>%
@@ -70,8 +70,7 @@ dat.posILI.GP <-
   rename(auth_GP = estim.consult)
 
 
-
-
+# use serological data
 p.H1N1 <-
   data.frame(age = ageGroups,
              p.H1N1_baseline = c(0.018, 0.037, 0.175, 0.089, 0.143, 0.23),      # Incidence of 2009 pandemic influenza A H1N1 infection in England: a cross-sectional serological study, Elizabeth Miller
@@ -137,19 +136,7 @@ auth_GP <-
 
 
 PROP_ILI_SYMP <- 0.16 # FluWatch suppl material p. 6 section 2) (file:///C:/Users/nathan.green.PHE/Dropbox/docs/mmc1%20(1).pdf)
-# PROP_ILI_SYMP <- 0.669 # (58.3, 74.5) # Time lines of infection..., Carrat (2008) Human challenge study
-
-
-
-# prop H1N1 Sx who _don't_ seek care ----------------------------------------
-
-notseekcare_H1N1 <-
-  p.seekcare %>%
-  merge(GP_swab_pos,
-        by = "NPFS_weeks_window") %>%
-  mutate(Sx.notseekcare_H1N1 = (1 - p.seekcare)*p.GP_swab_pos,
-         Sx.notseekcare_notH1N1 = (1 - p.seekcare)*(1 - p.GP_swab_pos)) %>%
-  select(-p.seekcare, -p.GP_swab_pos)
+# PROP_ILI_SYMP <- 0.669 # (58.3, 74.5) # Time lines of infection..., Carrat (2008) Human challenge study #potentially bias
 
 
 
@@ -180,14 +167,22 @@ num_dat_ILI <-
          notH1N1_GP = auth_GP * (1 - p.GP_swab_pos),
          H1N1_NPFS = auth_NPFS * p.NPFS_swab_pos,
          notH1N1_NPFS = auth_NPFS * (1 - p.NPFS_swab_pos),
+
          seekcare = auth_NPFS + auth_GP,
          H1N1_seekcare = H1N1_GP + H1N1_NPFS,
+         notH1N1_seekcare = notH1N1_GP + notH1N1_NPFS,
+
          H1N1 = p.H1N1 * pop,
+
          Sx_H1N1 = H1N1 * PROP_ILI_SYMP,
          p.seekcare = H1N1_seekcare/Sx_H1N1,
          p.seekcare_Sx = H1N1_seekcare/H1N1,
-         # p.seekcare = H1N1_seekcare/Sx_H1N1,
+
          Sx = seekcare/p.seekcare,
+
+         Sx.notseekcare_H1N1 = (1 - p.seekcare)*p.GP_swab_pos,
+         Sx.notseekcare_notH1N1 = (1 - p.seekcare)*(1 - p.GP_swab_pos),
+
          flu = Sx/PROP_ILI_SYMP,
          Sx.GP_H1N1 = H1N1_GP/Sx,
          Sx.NPFS_H1N1 = H1N1_NPFS/Sx,
@@ -195,8 +190,8 @@ num_dat_ILI <-
          Sx.GP_notH1N1 = notH1N1_GP/Sx,
          notseekcare_H1N1 = Sx.notseekcare_H1N1*Sx,
          notseekcare_notH1N1 = Sx.notseekcare_notH1N1*Sx,
-         flu.Sx = Sx/flu,
-         pop.flu = flu/pop)
-
+         flu.Sx = PROP_ILI_SYMP, #Sx/flu,
+         pop.flu = p.H1N1) #flu/pop)  #assume that risk of H1N1 and other flu is the same ... ##TODO
+                                      #Haywood Flu Watch suppl material says both ~18/19%
 
 
