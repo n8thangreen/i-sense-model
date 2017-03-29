@@ -31,6 +31,8 @@ scenario_all <-
   trans_mat2 %>%
   Ec_by_age_window(spec_NPFS = 1,
                    sens_NPFS = 0,
+                   spec_GP = 1,
+                   sens_GP = 0,
                    c_testNPFS = 0) %>%
   Ec_pop(pop_age_window) %>%
   sapply(sum, na.rm = TRUE)
@@ -40,6 +42,8 @@ scenario_nothing <-
   trans_mat2 %>%
   Ec_by_age_window(spec_NPFS = 0,
                    sens_NPFS = 1,
+                   spec_GP = 0,
+                   sens_GP = 1,
                    c_testNPFS = 0) %>%
   Ec_pop(pop_age_window) %>%
   sapply(sum, na.rm = TRUE)
