@@ -10,6 +10,7 @@
 #' @param p_notseekcare_H1N1 Probability
 #' @param p_Sx Probability
 #' @param p_flu Probability
+#' @param p_GP.Rx Probability
 #' @param p_GP.collect Probability
 #' @param p_NPFS.collect Probability
 #' @param p_start Probability
@@ -29,6 +30,7 @@ E_num <-  function(p_GP.H1N1 = 0.1,
                    p_notseekcare_H1N1 = 0.1,
                    p_Sx = 0.5,
                    p_flu = 0.1,
+                   p_GP.Rx = 0.3,
 
                    # treatment
                    p_GP.collect = 0.5,
@@ -61,7 +63,7 @@ E_num <-  function(p_GP.H1N1 = 0.1,
   new_GP <- Sx*(p_GP.notH1N1*(1 - spec_GP) + p_GP.H1N1*sens_GP)
 
   # treatment collections GP
-  collection_GP <- new_GP*p_GP.collect
+  collection_GP <- new_GP*p_GP.Rx*p_GP.collect
 
   # treatment collections NPFS
   collection_NPFS <- new_NPFS*p_NPFS.collect

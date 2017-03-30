@@ -9,8 +9,10 @@
 #' @param p_NPFS.H1N1 Probability
 #' @param p_NPFS.notH1N1 Probability
 #' @param p_notseekcare_H1N1 Probability
+#' @param p_notseekcare_notH1N1 Probability
 #' @param p_Sx Probability
 #' @param p_flu Probability
+#' @param p_GP.Rx Probability
 #' @param p_GP.collect Probability
 #' @param p_NPFS.collect Probability
 #' @param p_start Probability
@@ -43,8 +45,10 @@
 #' p_NPFS.H1N1 = 0.1
 #' p_NPFS.notH1N1 = 0.1
 #' p_notseekcare_H1N1 = 0.1
+#' p_notseekcare_notH1N1 = 0.5
 #' p_Sx = 0.5,
 #' p_flu = 0.1,
+#' p_GP.Rx = 0.3,
 #'
 #' # treatment
 #' p_GP.collect = 0.5
@@ -91,6 +95,7 @@ Ec_ILI <-  function(p_GP.H1N1 = 0.1,
                     p_NPFS.H1N1 = 0.1,
                     p_NPFS.notH1N1 = 0.1,
                     p_notseekcare_H1N1 = 0.1,
+                    p_notseekcare_notH1N1 = 1 - (p_GP.H1N1 + p_GP.notH1N1 + p_NPFS.H1N1 + p_NPFS.notH1N1 + p_notseekcare_H1N1),
                     p_Sx = 0.5,
                     p_flu = 0.1,
                     p_GP.Rx = 0.3,
@@ -152,12 +157,15 @@ Ec_ILI <-  function(p_GP.H1N1 = 0.1,
 
   Ec_NPFS.notH1N1 <- (1 - spec_NPFS)*c_collect*p_NPFS.collect + c_testNPFS + c_NPFS
 
+  Ec_notseekcare_notH1N1 <- 0
+
   Ec_Sx <-
     p_GP.H1N1*Ec_GP.H1N1 +
     p_GP.notH1N1*Ec_GP.notH1N1 +
     p_NPFS.H1N1*Ec_NPFS.H1N1 +
     p_NPFS.notH1N1*Ec_NPFS.notH1N1 +
-    p_notseekcare_H1N1*Ec_notseekcare_H1N1
+    p_notseekcare_H1N1*Ec_notseekcare_H1N1 +
+    p_notseekcare_notH1N1*Ec_notseekcare_notH1N1
 
   Ec_flu <- p_Sx*Ec_Sx
 
@@ -181,23 +189,24 @@ Ec_ILI <-  function(p_GP.H1N1 = 0.1,
 
   Eq_NPFS.posH1N1 <- Eq_collH1N1*p_NPFS.collect + (1 - p_NPFS.collect)*Eq_negH1N1
 
-  Eq_notseekcare_H1N1 <- Eq_negH1N1
-
-  # non-H1N1
   Eq_GP.H1N1 <- p_GP.Rx*(sens_GP*Eq_GP.posH1N1 + (1 - sens_GP)*Eq_negH1N1) + (1 - p_GP.Rx)*Eq_negH1N1
-
-  Eq_GP.notH1N1 <- 0
 
   Eq_NPFS.H1N1 <- sens_NPFS*Eq_NPFS.posH1N1 + (1 - sens_NPFS)*Eq_negH1N1
 
+  Eq_notseekcare_H1N1 <- Eq_negH1N1
+
+  # non-H1N1
+  Eq_GP.notH1N1 <- 0
   Eq_NPFS.notH1N1 <- 0
+  Eq_notseekcare_notH1N1 <- 0
 
   Eq_Sx <-
     p_GP.H1N1*Eq_GP.H1N1 +
     p_GP.notH1N1*Eq_GP.notH1N1 +
     p_NPFS.H1N1*Eq_NPFS.H1N1 +
     p_NPFS.notH1N1*Eq_NPFS.notH1N1 +
-    p_notseekcare_H1N1*Eq_notseekcare_H1N1
+    p_notseekcare_H1N1*Eq_notseekcare_H1N1 +
+    p_notseekcare_notH1N1*Eq_notseekcare_notH1N1
 
   Eq_flu <- p_Sx*Eq_Sx
 
@@ -206,9 +215,6 @@ Ec_ILI <-  function(p_GP.H1N1 = 0.1,
   return(c(c = cost,
            e = eff))
 }
-
-
-
 
 
 

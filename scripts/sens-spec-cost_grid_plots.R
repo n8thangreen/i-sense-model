@@ -9,6 +9,7 @@
 library(gridExtra)
 
 
+
 # threshold C-E unit test cost --------------------------------------------
 
 maxCost_scenario1  <- maxCost(interv = scenario1, status_quo = scenario0)
@@ -17,7 +18,7 @@ maxCost_scenario2b <- maxCost(interv = scenario2b, status_quo = scenario0)
 maxCost_scenario2c <- maxCost(interv = scenario2c, status_quo = scenario0)
 maxCost_scenario2d <- maxCost(interv = scenario2d, status_quo = scenario0)
 
-
+AT_SEQ <- seq(0, 10, 0.5)
 
 # maxCost[is.infinite(-maxCost)] <- 0
 
@@ -27,49 +28,49 @@ maxCost_scenario2d <- maxCost(interv = scenario2d, status_quo = scenario0)
 #                color.palette = terrain.colors)
 
 s1 <- lattice::levelplot(maxCost_scenario1,
-                   xlab = "Specificity", ylab = "Sensitivity",
-                   at = seq(0,10,0.5),
-                   main = "scenario 1",
-                   col.regions = gray(1 - 0:100/200)#,
-                   # panel = function(...){
-                   #   panel.contourplot(..., contour = TRUE)}
-                   )
+                         xlab = "Specificity", ylab = "Sensitivity",
+                         at = AT_SEQ,
+                         main = "scenario 1",
+                         col.regions = gray(1 - 0:100/200)#,
+                         # panel = function(...){
+                         #   panel.contourplot(..., contour = TRUE)}
+)
 
 s2 <- lattice::levelplot(maxCost_scenario2a,
-                   xlab = "Specificity", ylab = "Sensitivity",
-                   at = seq(0,10,0.5),
-                   main = "scenario 2a",
-                   col.regions = gray(1 - 0:100/200)#,
-                   # panel = function(...){
-                   #   panel.contourplot(..., contour = TRUE)}
-                    )
+                         xlab = "Specificity", ylab = "Sensitivity",
+                         at = AT_SEQ,
+                         main = "scenario 2a",
+                         col.regions = gray(1 - 0:100/200)#,
+                         # panel = function(...){
+                         #   panel.contourplot(..., contour = TRUE)}
+)
 
 s3 <- lattice::levelplot(maxCost_scenario2b,
-                   xlab = "Specificity", ylab = "Sensitivity",
-                   at = seq(0,10,0.5),
-                   main = "scenario 2b",
-                   col.regions = gray(1 - 0:100/200)#,
-                   # panel = function(...){
-                   #   panel.contourplot(..., contour = TRUE)}
-                    )
+                         xlab = "Specificity", ylab = "Sensitivity",
+                         at = AT_SEQ,
+                         main = "scenario 2b",
+                         col.regions = gray(1 - 0:100/200)#,
+                         # panel = function(...){
+                         #   panel.contourplot(..., contour = TRUE)}
+)
 
 s4 <- lattice::levelplot(maxCost_scenario2c,
-                   xlab = "Specificity", ylab = "Sensitivity",
-                   at = seq(0,10,0.5),
-                   main = "scenario 2c",
-                   col.regions = gray(1 - 0:100/200)#,
-                   # panel = function(...){
-                   #   panel.contourplot(..., contour = TRUE)}
-                    )
+                         xlab = "Specificity", ylab = "Sensitivity",
+                         at = AT_SEQ,
+                         main = "scenario 2c",
+                         col.regions = gray(1 - 0:100/200)#,
+                         # panel = function(...){
+                         #   panel.contourplot(..., contour = TRUE)}
+)
 
 s5 <- lattice::levelplot(maxCost_scenario2d,
-                   xlab = "Specificity", ylab = "Sensitivity",
-                   at = seq(0,10,0.5),
-                   main = "scenario 2d",
-                   col.regions = gray(1 - 0:100/200)#,
-                   # panel = function(...){
-                   #   panel.contourplot(..., contour = TRUE)}
-                    )
+                         xlab = "Specificity", ylab = "Sensitivity",
+                         at = AT_SEQ,
+                         main = "scenario 2d",
+                         col.regions = gray(1 - 0:100/200)#,
+                         # panel = function(...){
+                         #   panel.contourplot(..., contour = TRUE)}
+)
 
 grid.arrange(s1, s2, s3, s4, ncol = 2)
 
@@ -155,3 +156,24 @@ filled.contour(z = apply(INMBout2c[,,1,], 1, rev),
                xlab = "Sensitivity",
                ylab = "Specificity",
                color.palette = terrain.colors)
+
+
+
+#  alls scenarios frontier -------------------------------------------------------------------
+
+maxCost_scenario1[maxCost_scenario1< -10] <- 0
+maxCost_scenario1[maxCost_scenario1!=0] <- 1
+maxCost_scenario2a[maxCost_scenario2a< -10] <- 0
+maxCost_scenario2a[maxCost_scenario2a!=0] <- 1
+maxCost_scenario2b[maxCost_scenario2b< -10] <- 0
+maxCost_scenario2b[maxCost_scenario2b!=0] <- 1
+maxCost_scenario2c[maxCost_scenario2c< -10] <- 0
+maxCost_scenario2c[maxCost_scenario2c!=0] <- 1
+
+combined <- maxCost_scenario1 + maxCost_scenario2a + maxCost_scenario2b + maxCost_scenario2c
+lattice::levelplot(combined,
+                   xlab = "Specificity", ylab = "Sensitivity",
+                   main = "combined",
+                   col.regions = gray(1 - 0:100/200))
+
+

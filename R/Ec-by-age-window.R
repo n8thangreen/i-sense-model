@@ -59,11 +59,12 @@ Ec_by_age_window <- function(trans_mat,
                              p_NPFS.H1N1 = prob[from == "Sx" & to == "NPFS_H1N1"],
                              p_NPFS.notH1N1 = prob[from == "Sx" & to == "NPFS_notH1N1"],
                              p_notseekcare_H1N1 = prob[from == "Sx" & to == "notseekcare_H1N1"],
+                             p_notseekcare_notH1N1 = prob[from == "Sx" & to == "notseekcare_notH1N1"],
                              p_Sx = prob[from == "flu" & to == "Sx"],
                              p_flu = prob[from == "pop" & to == "flu"],
 
                              # treatment
-                             p_GP.collect = prob[from == "auth_GP" & to == "coll"],
+                             p_GP.collect = prob[from == "Rx_GP" & to == "coll"],
                              p_NPFS.collect = prob[from == "auth_NPFS" & to == "coll"],
                              p_start = prob[from == "coll" & to == "start"],
                              p_complete = prob[from == "start" & to == "complete"],

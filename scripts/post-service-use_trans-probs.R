@@ -142,6 +142,7 @@ num_dat_counts <-
          notH1N1_GP,
          H1N1_NPFS,
          notH1N1_NPFS,
+         Rx_GP,
          coll_NPFS,
          coll_GP,
          start_GP,

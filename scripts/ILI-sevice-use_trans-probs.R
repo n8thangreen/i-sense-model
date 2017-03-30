@@ -64,17 +64,19 @@ dat.npfs <- filter(dat.npfs, week >= FIRST_WEEK, week <= LAST_WEEK)
 p.seekcare <- data.frame(NPFS_weeks_window = c(1, 2, 3),
                          p.seekcare = c(0.172, 0.172, 0.172))
 
+Rx <- data.frame(GP.Rx = 0.3,
+                 GP.notRx = 0.7)
 
 dat.posILI.GP <-
   dat.posILI.GP %>%
-  rename(auth_GP = estim.consult)
+  mutate(auth_GP = estim.consult)
 
 
-# use serological data
+# use serological data for prevalence
 p.H1N1 <-
   data.frame(age = ageGroups,
-             p.H1N1_baseline = c(0.018, 0.037, 0.175, 0.089, 0.143, 0.23),      # Incidence of 2009 pandemic influenza A H1N1 infection in England: a cross-sectional serological study, Elizabeth Miller
-             post_2nd_wave = c(0.37, 0.62, 0.44, 0.33, 0.27, 0.25)) %>%   # Seroprevalence of Influenza A(H1N1) pdm09 Virus Antibody, England, 2010 and 2011, Katja Hoschler
+             p.H1N1_baseline = c(0.018, 0.037, 0.175, 0.089, 0.143, 0.23), # Incidence of 2009 pandemic influenza A H1N1 infection in England: a cross-sectional serological study, Elizabeth Miller
+             post_2nd_wave = c(0.37, 0.62, 0.44, 0.33, 0.27, 0.25)) %>%    # Seroprevalence of Influenza A(H1N1) pdm09 Virus Antibody, England, 2010 and 2011, Katja Hoschler
   mutate(p.H1N1 = post_2nd_wave - p.H1N1_baseline)
 
 
@@ -149,10 +151,10 @@ num_dat_ILI <-
   merge(auth_GP, all = TRUE) %>%
   merge(GP_swab_pos, all = TRUE) %>%
   merge(NPFS_swab_pos, all = TRUE) %>%
-  merge(notseekcare_H1N1, all = TRUE) %>%
   merge(pop_age, all = TRUE) %>%
   merge(p.seekcare) %>%
-  merge(p.H1N1)
+  merge(p.H1N1) %>%
+  merge(Rx)
 
 
 num_dat_ILI[is.na(num_dat_ILI)] <- 0
@@ -167,6 +169,12 @@ num_dat_ILI <-
          notH1N1_GP = auth_GP * (1 - p.GP_swab_pos),
          H1N1_NPFS = auth_NPFS * p.NPFS_swab_pos,
          notH1N1_NPFS = auth_NPFS * (1 - p.NPFS_swab_pos),
+
+         Rx_GP = auth_GP*GP.Rx,
+         Rx_H1N1_GP = H1N1_GP*GP.Rx,
+         Rx_notH1N1_GP = notH1N1_GP*GP.Rx,
+         notRx_H1N1_GP = H1N1_GP*GP.notRx,
+         notRx_notH1N1_GP = notH1N1_GP*GP.notRx,
 
          seekcare = auth_NPFS + auth_GP,
          H1N1_seekcare = H1N1_GP + H1N1_NPFS,

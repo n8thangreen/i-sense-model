@@ -22,6 +22,7 @@ for (frac in fracH1N1) {
     mutate(GP = GP_H1N1 + GP_notH1N1,
            NPFS = NPFS_H1N1 + NPFS_notH1N1,
            notseekcare = notseekcare_H1N1 + notseekcare_notH1N1,
+
            GP_H1N1 = GP*frac,
            GP_notH1N1 = GP*(1 - frac),
            NPFS_H1N1 = NPFS*frac,
@@ -42,6 +43,7 @@ for (frac in fracH1N1) {
                      sens_NPFS = 1,
                      spec_GP = 0,
                      sens_GP = 1,
+                     p_GP.Rx = 1,
                      c_testNPFS = 0,
                      c_testGP = 0) %>%
     Ec_pop(pop_age_window) %>%
@@ -67,5 +69,39 @@ for (frac in fracH1N1) {
 }
 
 names(out) <- fracH1N1
-plot(fracH1N1, out, type = "l", ylab = "INMB (GBP)", xlab = "Proportion seeking care (A)H1N1", main = "WTP = 30000")
+threshold <- fracH1N1[min(which(out>0))]
+
+
+# assuming perfect specificity
+# adjust for:
+#  imperfect sensitivity
+#  small sample variability
+
+NUM_TESTED <- 10
+lower.prop <- fracH1N1 + 1.96*sqrt(fracH1N1*(1 - fracH1N1)/NUM_TESTED)
+upper.prop <- fracH1N1 - 1.96*sqrt(fracH1N1*(1 - fracH1N1)/NUM_TESTED)
+
+
+# plots ------------------
+
+plot(x = fracH1N1, y = out, type = "l",
+     ylab = "INMB (GBP)", xlab = "Proportion seeking care (A)H1N1", main = "WTP = 30000")
 abline(a = 0, b = 0, lty = 2)
+
+
+x11()
+plot(x = fracH1N1, y = out, type = "l",
+     ylab = "INMB (GBP)", xlab = "Proportion rapid test diagnosed (A)H1N1", main = "WTP = 30000",
+     panel.first = polygon(x = c(lower.prop, rev(upper.prop)), y = c(out, rev(out)), border = NA, col="#ebebeb"))
+lines(x = fracH1N1 - (threshold*0.26), y = out, col =2)
+lines(x = fracH1N1 - (threshold*0.73), y = out, col = 3)
+
+# lines(x = lower.prop, y = out, lty = 3)
+# lines(x = upper.prop, y = out, lty = 3)
+
+text(x = 0.1, y = 817279.1, labels = "sens:0.26")
+text(x = 0.3, y = 817279.1, labels = "sens:0.73")
+text(x = 0.5, y = 817279.1, labels = "sens:1.0")
+
+abline(a = 0, b = 0, lty = 2)
+

@@ -38,8 +38,8 @@ E_num_by_age_window <- function(trans_mat,
   WINDOW <- unique(trans_mat$NPFS_weeks_window) %>% sort()
 
   ##TODO## dont write this explicitly...
-  names_pop <- c("flu","ILI_NPFS","ILI_GP","new_NPFS","new_GP","collection_GP",
-                 "collection_NPFS","complete_Tx","complete_Tx_H1N1","SxH1N1","hosp","death")
+  names_pop <- c("flu", "ILI_NPFS", "ILI_GP", "new_NPFS", "new_GP", "collection_GP",
+                 "collection_NPFS", "complete_Tx", "complete_Tx_H1N1", "SxH1N1", "hosp", "death")
 
   out <- array(data = NA,
                dim = c(length(WINDOW),  length(AGE), length(names_pop)),
@@ -67,7 +67,7 @@ E_num_by_age_window <- function(trans_mat,
                              p_flu = prob[from == "pop" & to == "flu"],
 
                              # treatment
-                             p_GP.collect = prob[from == "auth_GP" & to == "coll"],
+                             p_GP.collect = prob[from == "Rx_GP" & to == "coll"],
                              p_NPFS.collect = prob[from == "auth_NPFS" & to == "coll"],
                              p_start = prob[from == "coll" & to == "start"],
                              p_complete = prob[from == "start" & to == "complete"],
