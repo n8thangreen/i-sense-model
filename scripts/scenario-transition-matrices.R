@@ -6,8 +6,18 @@
 # scenario transition matrices
 
 
+##TODO: negative NPFS to go to the GP afterwards...
 
 
+
+# scenario 1b -------------------------------------------------------------
+
+
+trans_mat_1b <-
+  trans_mat %>%
+  mutate(prob = ifelse(from == "Rx_GP" & to == "coll",
+                       prob + (1 - prob)/2,
+                       prob))
 
 # scenario 2b -------------------------------------------------------------
 
@@ -19,10 +29,9 @@ trans_mat_2b <-
                        prob))
 
 
-
 # scenario 2c -------------------------------------------------------------
 
-trans_mat2 <-
+trans_mat_2c <-
   trans_mat %>%
   dcast(from + age + NPFS_weeks_window ~ to,
         value.var = "prob") %>%
@@ -55,7 +64,7 @@ trans_mat2 <-
 
 # scenario 2d -------------------------------------------------------------
 
-trans_mat2 <-
+trans_mat_2d <-
   trans_mat %>%
   dcast(from + age + NPFS_weeks_window ~ to,
         value.var = "prob") %>%
@@ -88,5 +97,52 @@ trans_mat2 <-
        value.name = "prob") %>%
   select(from, to, everything()) %>%
   filter(complete.cases(.))
+
+
+
+# scenario 2e -------------------------------------------------------------
+
+trans_mat_2e <-
+  trans_mat_2d %>%
+  mutate(prob = ifelse(from == "auth_NPFS" & to == "coll",
+                       prob + (1 - prob)/2,
+                       prob)) %>%
+  dcast(from + age + NPFS_weeks_window ~ to,
+        value.var = "prob") %>%
+  mutate(NPFS_H1N1 = ifelse(NPFS_H1N1 == 0,
+                            0,
+                            ifelse(is.na(NPFS_H1N1),
+                                   NA,
+                                   NPFS_H1N1 + GP_H1N1/2)),
+         NPFS_notH1N1 = ifelse(NPFS_notH1N1 == 0,
+                               0,
+                               ifelse(is.na(NPFS_notH1N1),
+                                      NA,
+                                      NPFS_notH1N1 + GP_notH1N1/2)),
+         GP_H1N1 = ifelse(NPFS_H1N1 == 0,
+                          GP_H1N1,
+                          ifelse(is.na(GP_H1N1),
+                                 NA,
+                                 GP_H1N1/2)),
+         GP_notH1N1 = ifelse(NPFS_notH1N1 == 0,
+                             GP_notH1N1,
+                             ifelse(is.na(GP_notH1N1),
+                                    NA,
+                                    GP_notH1N1/2))) %>%
+  melt(id.vars = c("from", "age", "NPFS_weeks_window"),
+       variable.name = "to",
+       value.name = "prob") %>%
+  select(from, to, everything()) %>%
+  filter(complete.cases(.))
+
+
+# scenario 3 --------------------------------------------------------------
+
+trans_mat_3 <-
+  trans_mat_2e %>%
+  mutate(prob = ifelse(from == "Rx_GP" & to == "coll",
+                       prob + (1 - prob)/2,
+                       prob))
+
 
 
