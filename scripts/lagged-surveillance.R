@@ -1,3 +1,10 @@
+#
+#
+#
+# N Green
+# Feb 2017
+#
+# lagged surveillance
 
 
 library(ggplot2)
@@ -14,7 +21,7 @@ load(file = "../../data cleaned/data_positiveILI_NPFS_perrine_feb2017.RData")
 # load("../../data raw/data_positiveILI_NPFS_perrine_march2017.RData")
 # load("../../data raw/data_positiveILI_GP_perrine_march2017.RData")
 
-load("C:/Users/Nathan/Dropbox/i-sense/R/Ilarias-model/H1N1model/data/dates_lookup.RData")
+load("../../R/Ilarias-model/H1N1model/data/dates_lookup.RData")
 
 
 posILI.GP <-
@@ -22,6 +29,7 @@ posILI.GP <-
   group_by(week) %>%
   dplyr::summarise(posILI_GP = sum(posILI),
                    auth_GP = sum(estim.consult))
+
 posILI.NPFS <-
   dat.posILI.NPFS %>%
   group_by(week) %>%
@@ -60,6 +68,8 @@ dat <- dat[1:50, ]
 #   quantile(c(0.025, 0.975))
 
 
+# subset for different time windows ---------------------------------------
+
 subdat <- list()
 week_cuts <- c(6, 12, 18, 37)
 
@@ -76,7 +86,8 @@ for (i in seq_along(week_cuts)) {
 }
 
 
-# plots
+
+# plots -------------------------------------------------------------------
 
 surveill_plot <- function(DATA,
                           x_axis_labels = FALSE,
@@ -114,8 +125,8 @@ surveill_plot <- function(DATA,
 }
 
 
-pdf("plots/surveillance_grid_plot.pdf")
-tiff('plots/surveillance_grid_plot.tiff', units = "in", width = 20, height = 20, res = 300)
+# pdf("plots/surveillance_grid_plot.pdf")
+# tiff('plots/surveillance_grid_plot.tiff', units = "in", width = 20, height = 20, res = 300)
 
 gridExtra::grid.arrange(
   surveill_plot(subdat[[1]], TITLE = "(a)"),
