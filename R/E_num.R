@@ -72,7 +72,7 @@ E_num <-  function(p_GP.H1N1 = 0.1,
   complete_Tx <- (collection_GP + collection_NPFS)*p_start*p_complete
 
   # treatments completed H1N1
-  complete_Tx_H1N1 <- Sx*(p_NPFS.H1N1*sens_NPFS*p_NPFS.collect + p_GP.H1N1*sens_GP*p_GP.collect)*p_start*p_complete
+  complete_Tx_H1N1 <- Sx*(p_NPFS.H1N1*sens_NPFS*p_NPFS.collect + p_GP.H1N1*sens_GP*p_GP.Rx*p_GP.collect)*p_start*p_complete
 
   # Sx H1N1 cases
   SxH1N1 <- Sx*(p_NPFS.H1N1 + p_GP.H1N1 + p_notseekcare_H1N1)

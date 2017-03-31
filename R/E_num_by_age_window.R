@@ -10,6 +10,7 @@
 #' @param sens_GP
 #' @param c_testNPFS
 #' @param c_testGP
+#' @param ...
 #'
 #' @return
 #' @export
@@ -30,7 +31,8 @@ E_num_by_age_window <- function(trans_mat,
                                 spec_GP = 0,
                                 sens_GP = 1,
                                 c_testNPFS = 0,
-                                c_testGP = 0){
+                                c_testGP = 0,
+                                ...){
 
   AGE <- unique(trans_mat$age)
   AGE <- AGE[!AGE %in% c("overall", "total", NA)]
@@ -79,7 +81,8 @@ E_num_by_age_window <- function(trans_mat,
                              spec_NPFS = spec_NPFS,
                              sens_NPFS = sens_NPFS,
                              spec_GP = spec_GP,
-                             sens_GP = sens_GP))
+                             sens_GP = sens_GP,
+                             ...))
     }
   }
 

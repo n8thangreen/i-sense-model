@@ -89,30 +89,43 @@ num_dat <-
 # S. Venkatesan, P.R. Myles et al
 completeTx.adj <- 0.52
 
-
-# Presanis et al (2011) BMJ "Changes in severity of 2009 pandemic A/..."
+# Vaccination against pandemic influenza A/H1N1v in England: A real-time economic evaluation, Baguelin (2010)
 num_dat_hosp <-
   data.frame(age = ageGroups,
-             NPFS_weeks_window = 1,
-             ILI.hosp = 0.0054,
-             coll.hosp = 0.0054,
-             start.hosp = 0.0054,
-             hosp.death = 0.028) %>%
-  rbind(
-    data.frame(age = ageGroups,
-               NPFS_weeks_window = 2,
-               ILI.hosp = 0.0001,
-               coll.hosp = 0.0001,
-               start.hosp = 0.0001,
-               hosp.death = 0.028)) %>%
-  rbind(
-    data.frame(age = ageGroups,
-               NPFS_weeks_window = 3,
-               ILI.hosp = 0.0055,
-               coll.hosp = 0.0055,
-               start.hosp = 0.0055,
-               hosp.death = 0.032)) %>%
-  mutate(complete.hosp = start.hosp*completeTx.adj)
+             lowrisk  = c(0.048, 0.0056, 0.0115, 0.0115, 0.0115, 0.0244),
+             highrisk = c(0.2144, 0.0671, 0.0632, 0.0632, 0.0632, 0.3248)) %>%
+  mutate(ILI.hosp = (lowrisk*9 + highrisk)/10,
+         hosp.death = 0.032,
+         complete.hosp = ILI.hosp*completeTx.adj) %>%
+  slice(rep(1:n(), each = 3)) %>%
+  mutate(NPFS_weeks_window = rep(1:3, times = n()/3)) %>%
+  select(-lowrisk, -highrisk)
+
+
+
+# Presanis et al (2011) BMJ "Changes in severity of 2009 pandemic A/..."
+# num_dat_hosp <-
+#   data.frame(age = ageGroups,
+#              NPFS_weeks_window = 1,
+#              ILI.hosp = 0.0054,
+#              coll.hosp = 0.0054,
+#              start.hosp = 0.0054,
+#              hosp.death = 0.028) %>%
+#   rbind(
+#     data.frame(age = ageGroups,
+#                NPFS_weeks_window = 2,
+#                ILI.hosp = 0.0001,
+#                coll.hosp = 0.0001,
+#                start.hosp = 0.0001,
+#                hosp.death = 0.028)) %>%
+#   rbind(
+#     data.frame(age = ageGroups,
+#                NPFS_weeks_window = 3,
+#                ILI.hosp = 0.0055,
+#                coll.hosp = 0.0055,
+#                start.hosp = 0.0055,
+#                hosp.death = 0.032)) %>%
+#   mutate(complete.hosp = start.hosp*completeTx.adj)
 
 
 
@@ -181,8 +194,6 @@ num_dat_probs <-
          coll.start,
          start.complete,
          ILI.hosp,
-         coll.hosp,
-         start.hosp,
          complete.hosp,
          hosp.death)
 
@@ -210,8 +221,6 @@ trans_mat <-
                         "start.complete",
                         "complete.hosp",
                         "ILI.hosp",
-                        "coll.hosp",
-                        "start.hosp",
                         "hosp.death")) %>%
   separate(fromto, c("from", "to"), "\\.") %>%
   select(from, to, everything()) %>%

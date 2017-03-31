@@ -26,6 +26,8 @@ ageGroups <- c("04", "514", "1524", "2544", "4564", "65.")
 
 
 # duplicate for each week window 1,2,3
+pop_age$age <- factor(x = pop_age$age,
+                      levels = c('04', '514', '1524', '2544', '4564', '65.', 'overall'))
 pop_age_window <-
   pop_age %>%
   slice(rep(1:n(), each = 3)) %>%

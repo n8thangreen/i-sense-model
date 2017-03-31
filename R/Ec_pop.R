@@ -19,9 +19,10 @@ Ec_pop <- function(cost_QALY,
 
   out <- list()
 
-  pop2 <- dcast(data = pop,
-                NPFS_weeks_window ~ age,
-                value.var = "pop")
+  pop2 <-
+    pop %>%
+    dcast(NPFS_weeks_window ~ age,
+          value.var = "pop")
 
   rownames(pop2) <- pop2$NPFS_weeks_window
 

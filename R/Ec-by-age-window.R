@@ -34,7 +34,7 @@ Ec_by_age_window <- function(trans_mat,
                              c_testGP = 0,
                              ...){
 
-  AGE <- unique(trans_mat$age)
+  AGE <- levels(trans_mat$age)
   AGE <- AGE[!AGE %in% c("overall", "total", NA)]
 
   WINDOW <- unique(trans_mat$NPFS_weeks_window) %>% sort()

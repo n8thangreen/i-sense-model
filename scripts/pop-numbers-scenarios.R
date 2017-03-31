@@ -9,12 +9,6 @@
 library(magrittr)
 
 
-# duplicate for each week window
-pop_age_window <-
-  pop_age %>%
-  slice(rep(1:n(), each = 3)) %>%
-  mutate(NPFS_weeks_window = rep(1:3, times = n()/3))
-
 
 # scenario 0 (status-quo) -------------------------------------------------
 
@@ -35,9 +29,10 @@ write.csv(scenario0_counts, "../../data cleaned/scenario0_counts_table.csv")
 
 scenario1_counts <-
   trans_mat %>%
-  E_num_by_age_window(spec_GP = 0.64,
-                      sens_GP = 0.96,
-                      c_testGP = 20) %>%
+  E_num_by_age_window(spec_GP = 0.96,
+                      sens_GP = 0.73,
+                      c_testGP = 20,
+                      p_GP.Rx = 1) %>%
   E_num_pop(pop_age_window) %>%
   lapply(function(x)
     data.frame(window = rownames(x),
@@ -53,8 +48,8 @@ write.csv(scenario1_counts, "../../data cleaned/scenario1_counts_table.csv")
 
 scenario2a_counts <-
   trans_mat %>%
-  E_num_by_age_window(spec_NPFS = 0.64,
-                      sens_NPFS = 0.96,
+  E_num_by_age_window(spec_NPFS = 0.96,
+                      sens_NPFS = 0.73,
                       c_testNPFS = 20) %>%
   E_num_pop(pop_age_window) %>%
   lapply(function(x)
@@ -68,7 +63,7 @@ write.csv(scenario2a_counts, "../../data cleaned/scenario2a_counts_table.csv")
 
 # scenario 2b (test @ NPFS only AND obtain Rx increase) ----------------------
 
-trans_mat2 <-
+trans_mat_2b <-
   trans_mat %>%
   mutate(prob = ifelse(from == "auth_NPFS" & to == "coll",
                        prob + (1 - prob)/2,
@@ -76,9 +71,9 @@ trans_mat2 <-
 
 
 scenario2b_counts <-
-  trans_mat %>%
-  E_num_by_age_window(spec_NPFS = 0.64,
-                      sens_NPFS = 0.96,
+  trans_mat_2b %>%
+  E_num_by_age_window(spec_NPFS = 0.96,
+                      sens_NPFS = 0.73,
                       c_testNPFS = 20) %>%
   E_num_pop(pop_age_window) %>%
   lapply(function(x)
@@ -93,7 +88,7 @@ write.csv(scenario2b_counts, "../../data cleaned/scenario2b_counts_table.csv")
 
 # scenario 2c (test @ NPFS only AND switch from GP to NPFS) ---------------------
 
-trans_mat2 <-
+trans_mat_2c <-
   trans_mat %>%
   dcast(from + age + NPFS_weeks_window ~ to,
         value.var = "prob") %>%
@@ -124,9 +119,9 @@ trans_mat2 <-
   filter(complete.cases(.))
 
 scenario2c_counts <-
-  trans_mat %>%
-  E_num_by_age_window(spec_NPFS = 0.64,
-                      sens_NPFS = 0.96,
+  trans_mat_2c %>%
+  E_num_by_age_window(spec_NPFS = 0.96,
+                      sens_NPFS = 0.73,
                       c_testNPFS = 20) %>%
   E_num_pop(pop_age_window) %>%
   lapply(function(x)
@@ -140,7 +135,7 @@ write.csv(scenario2c_counts, "../../data cleaned/scenario2c_counts_table.csv")
 
 # scenario 2d (test @ NPFS only AND NPFS use increase) -----------------------------------------
 
-trans_mat2 <-
+trans_mat_2d <-
   trans_mat %>%
   dcast(from + age + NPFS_weeks_window ~ to,
         value.var = "prob") %>%
@@ -176,9 +171,9 @@ trans_mat2 <-
 
 
 scenario2d_counts <-
-  trans_mat %>%
-  E_num_by_age_window(spec_NPFS = 0.64,
-                      sens_NPFS = 0.96,
+  trans_mat_2d %>%
+  E_num_by_age_window(spec_NPFS = 0.96,
+                      sens_NPFS = 0.73,
                       c_testNPFS = 20) %>%
   E_num_pop(pop_age_window) %>%
   lapply(function(x)
@@ -187,7 +182,20 @@ scenario2d_counts <-
 
 scenario2d_counts <- multimerge(scenario2d_counts, c("variable","window"))
 
+
 write.csv(scenario2d_counts, "../../data cleaned/scenario2d_counts_table.csv")
 
 
 
+##test
+scenario_counts <-
+  trans_mat_2d %>%
+  E_num_by_age_window(spec_NPFS = 0.96,
+                      sens_NPFS = 0.7,
+                      c_testNPFS = 20) %>%
+  E_num_pop(pop_age_window) %>%
+  lapply(function(x)
+    data.frame(window = rownames(x),
+               x, check.names = FALSE) %>% melt())
+
+scenario_counts <- multimerge(scenario_counts, c("variable","window"))
