@@ -95,7 +95,7 @@ num_dat_hosp <-
              lowrisk  = c(0.048, 0.0056, 0.0115, 0.0115, 0.0115, 0.0244),
              highrisk = c(0.2144, 0.0671, 0.0632, 0.0632, 0.0632, 0.3248)) %>%
   mutate(ILI.hosp = (lowrisk*9 + highrisk)/10,
-         hosp.death = 0.032,
+         hosp.death = 0.030,
          complete.hosp = ILI.hosp*completeTx.adj) %>%
   slice(rep(1:n(), each = 3)) %>%
   mutate(NPFS_weeks_window = rep(1:3, times = n()/3)) %>%
@@ -223,8 +223,8 @@ trans_mat <-
                         "ILI.hosp",
                         "hosp.death")) %>%
   separate(fromto, c("from", "to"), "\\.") %>%
-  select(from, to, everything()) %>%
-  arrange(to)
+  select(from, to, everything())  %>%
+  arrange(from, to, age, NPFS_weeks_window)
 
 
 write.csv(num_dat_counts, file = "../../data cleaned/num_dat_counts.csv")

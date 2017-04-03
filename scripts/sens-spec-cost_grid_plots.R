@@ -13,10 +13,14 @@ library(gridExtra)
 # threshold C-E unit test cost --------------------------------------------
 
 maxCost_scenario1  <- maxCost(interv = scenario1, status_quo = scenario0)
+maxCost_scenario1b  <- maxCost(interv = scenario1b, status_quo = scenario0)
 maxCost_scenario2a <- maxCost(interv = scenario2a, status_quo = scenario0)
 maxCost_scenario2b <- maxCost(interv = scenario2b, status_quo = scenario0)
 maxCost_scenario2c <- maxCost(interv = scenario2c, status_quo = scenario0)
 maxCost_scenario2d <- maxCost(interv = scenario2d, status_quo = scenario0)
+maxCost_scenario2e <- maxCost(interv = scenario2e, status_quo = scenario0)
+maxCost_scenario3 <- maxCost(interv = scenario3, status_quo = scenario0)
+
 
 AT_SEQ <- seq(0, 16, 1)
 
@@ -31,8 +35,8 @@ s1 <-
   lattice::levelplot(maxCost_scenario1,
                      xlab = "Specificity (%)", ylab = "Sensitivity (%)",
                      at = seq(0, 30, 1),
-                     main = "Scenario 1",
-                     col.regions = terrain.colors(30),
+                     main = "Scenario 1a",
+                     col.regions = topo.colors(30),
                      scales = list(
                        x = list(at = seq(1, 21, 2),
                                 labels = c("0", "20", "40", "60", "80", "100")),
@@ -43,7 +47,19 @@ s1 <-
 #                          #   panel.contourplot(..., contour = TRUE)}
 # )
 
-s2 <-
+s1b <-
+  lattice::levelplot(maxCost_scenario1b,
+                     xlab = "Specificity (%)", ylab = "Sensitivity (%)",
+                     at = seq(0, 30, 1),
+                     main = "Scenario 1b",
+                     col.regions = topo.colors(30),
+                     scales = list(
+                       x = list(at = seq(1, 21, 2),
+                                labels = c("0", "20", "40", "60", "80", "100")),
+                       y = list(at = seq(1, 21, 2),
+                                labels = c("0", "20", "40", "60", "80", "100"))))
+
+s2a <-
   lattice::levelplot(maxCost_scenario2a,
                      xlab = "Specificity (%)", ylab = "Sensitivity (%)",
                      at = AT_SEQ,
@@ -59,7 +75,7 @@ s2 <-
 #                          #   panel.contourplot(..., contour = TRUE)}
 # )
 
-s3 <-
+s2b <-
   lattice::levelplot(maxCost_scenario2b,
                      xlab = "Specificity (%)", ylab = "Sensitivity (%)",
                      at = AT_SEQ,
@@ -75,7 +91,7 @@ s3 <-
 #                          #   panel.contourplot(..., contour = TRUE)}
 # )
 
-s4 <-
+s2c <-
   lattice::levelplot(maxCost_scenario2c,
                      xlab = "Specificity (%)", ylab = "Sensitivity (%)",
                      at = AT_SEQ,
@@ -91,7 +107,7 @@ s4 <-
 #                          #   panel.contourplot(..., contour = TRUE)}
 # )
 
-s5 <-
+s2d <-
   lattice::levelplot(maxCost_scenario2d,
                      xlab = "Specificity (%)", ylab = "Sensitivity (%)",
                      at = AT_SEQ,
@@ -107,17 +123,45 @@ s5 <-
 #                          #   panel.contourplot(..., contour = TRUE)}
 # )
 
+s2e <-
+  lattice::levelplot(maxCost_scenario2e,
+                     xlab = "Specificity (%)", ylab = "Sensitivity (%)",
+                     at = seq(0, 30, 1),
+                     main = "Scenario 2e",
+                     col.regions = topo.colors(30),
+                     scales = list(
+                       x = list(at = seq(1, 21, 2),
+                                labels = c("0", "20", "40", "60", "80", "100")),
+                       y = list(at = seq(1, 21, 2),
+                                labels = c("0", "20", "40", "60", "80", "100"))))
+
+s3 <-
+  lattice::levelplot(maxCost_scenario3,
+                     xlab = "Specificity (%)", ylab = "Sensitivity (%)",
+                     at = seq(0, 30, 1),
+                     main = "Scenario 3",
+                     col.regions = topo.colors(30),
+                     scales = list(
+                       x = list(at = seq(1, 21, 2),
+                                labels = c("0", "20", "40", "60", "80", "100")),
+                       y = list(at = seq(1, 21, 2),
+                                labels = c("0", "20", "40", "60", "80", "100"))))
+
 s1
-s2
+s1b
+s2a
+s2b
+s2c
+s2d
+s2e
 s3
-s4
-s5
 
-par(mar=c(5.1,4.1,4.1,2.1))
-x11()
-grid.arrange(s1, s2, s3, s4, s5, ncol = 2)
 
-grid.arrange(s1, arrangeGrob(s2, s3), arrangeGrob(s4, s5), ncol = 3)
+grid.arrange(arrangeGrob(s1, s1b),
+             arrangeGrob(s2a, s2b),
+             arrangeGrob(s2c, s2d),
+             arrangeGrob(s2e, s3),
+             ncol = 4)
 
 
 

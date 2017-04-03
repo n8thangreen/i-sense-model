@@ -50,6 +50,30 @@ for (i in seq_along(spec.seq)) {
 save(scenario1, file = "../../data cleaned/scenario1_costeffective.RData")
 
 
+# scenario 1b (test @ GP & ontain Rx increase) --------------------------------
+# GP prescribe on rapid test only
+
+scenario1b <- scenario_TEMPLATE
+
+for (i in seq_along(spec.seq)) {
+  for (j in seq_along(sens.seq)) {
+    for (k in seq_along(c_test.seq)) {
+
+      scenario1b[i,j,k, ] <-
+        trans_mat_1b %>%
+        Ec_by_age_window(spec_GP = spec.seq[i],
+                         sens_GP = sens.seq[j],
+                         c_testGP = c_test.seq[k],
+                         p_GP.Rx = 1) %>%
+        Ec_pop(pop_age_window) %>%
+        sapply(sum, na.rm = TRUE)
+    }
+  }
+}
+
+save(scenario1b, file = "../../data cleaned/scenario1b_costeffective.RData")
+
+
 # scenario 2a (test @ NPFS only) ---------------------------------------------
 
 scenario2a <- scenario_TEMPLATE
@@ -167,7 +191,7 @@ for (i in seq_along(spec.seq)) {
 save(scenario2e, file = "../../data cleaned/scenario2e_costeffective.RData")
 
 
-# scenario 3  -------------------------------------------------------------------
+# scenario 3 (combine NPFS and GP scenarios) ------------------------------------
 
 
 scenario3 <- scenario_TEMPLATE
