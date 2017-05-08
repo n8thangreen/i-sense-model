@@ -26,16 +26,16 @@ scenario0 <-
   sapply(sum, na.rm = TRUE)
 
 
-# scenario 1 (test @ GP only) ----------------------------------------------
+# scenario 1a (test @ GP only) ----------------------------------------------
 # GP prescribe on rapid test only
 
-scenario1 <- scenario_TEMPLATE
+scenario1a <- scenario_TEMPLATE
 
 for (i in seq_along(spec.seq)) {
   for (j in seq_along(sens.seq)) {
     for (k in seq_along(c_test.seq)) {
 
-      scenario1[i,j,k, ] <-
+      scenario1a[i,j,k, ] <-
         trans_mat %>%
         Ec_by_age_window(spec_GP = spec.seq[i],
                          sens_GP = sens.seq[j],
@@ -47,10 +47,10 @@ for (i in seq_along(spec.seq)) {
   }
 }
 
-save(scenario1, file = "../../data cleaned/scenario1_costeffective.RData")
+save(scenario1a, file = "../../data cleaned/scenario1a_costeffective.RData")
 
 
-# scenario 1b (test @ GP & ontain Rx increase) --------------------------------
+# scenario 1b (test @ GP & obtain Rx increase) --------------------------------
 # GP prescribe on rapid test only
 
 scenario1b <- scenario_TEMPLATE

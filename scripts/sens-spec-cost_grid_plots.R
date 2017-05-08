@@ -13,13 +13,13 @@ library(gridExtra)
 # threshold C-E unit test cost --------------------------------------------
 
 maxCost_scenario1  <- maxCost(interv = scenario1, status_quo = scenario0)
-maxCost_scenario1b  <- maxCost(interv = scenario1b, status_quo = scenario0)
+maxCost_scenario1b <- maxCost(interv = scenario1b, status_quo = scenario0)
 maxCost_scenario2a <- maxCost(interv = scenario2a, status_quo = scenario0)
 maxCost_scenario2b <- maxCost(interv = scenario2b, status_quo = scenario0)
 maxCost_scenario2c <- maxCost(interv = scenario2c, status_quo = scenario0)
 maxCost_scenario2d <- maxCost(interv = scenario2d, status_quo = scenario0)
 maxCost_scenario2e <- maxCost(interv = scenario2e, status_quo = scenario0)
-maxCost_scenario3 <- maxCost(interv = scenario3, status_quo = scenario0)
+maxCost_scenario3  <- maxCost(interv = scenario3, status_quo = scenario0)
 
 
 AT_SEQ <- seq(0, 16, 1)
