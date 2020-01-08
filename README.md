@@ -30,3 +30,7 @@ The key steps of the analysis pipeline are:
   - Calculate transition matrix for each scenario
 
   - Calculate cost-effectiveness for each scenario
+
+## Outputs
+
+The final report is [here](docs/finalreport.pdf).
