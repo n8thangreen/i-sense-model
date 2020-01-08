@@ -1,11 +1,13 @@
+#
+# project: i-sense
+# N Green
+# May 2017
+#
 
-library(plyr)
-library(magrittr)
 
-
-load("C:/Users/Nathan/Dropbox/i-sense/R/Ilarias-model/H1N1model/data/dates_lookup.RData")
-load("C:/Users/Nathan/Dropbox/i-sense/data raw/data_positiveILI_GP_perrine_feb2017.RData")
-load("C:/Users/Nathan/Dropbox/i-sense/data raw/data_positiveILI_NPFS_perrine_feb2017.RData")
+load("../../R/data-analysis/Ilarias-model/H1N1model/data/dates_lookup.RData")
+load("../../data raw/data_positiveILI_GP_perrine_feb2017.RData")
+load("../../data raw/data_positiveILI_NPFS_perrine_feb2017.RData")
 
 
 dat.posILI.GP <-
@@ -33,7 +35,7 @@ dat.posILI.NPFS <-
                               "65+" = "65.")))
 
 
-save(dat.posILI.GP, file = "C:/Users/Nathan/Dropbox/i-sense/data cleaned/data_positiveILI_GP_perrine_feb2017.RData")
-save(dat.posILI.NPFS, file = "C:/Users/Nathan/Dropbox/i-sense/data cleaned/data_positiveILI_NPFS_perrine_feb2017.RData")
+save(dat.posILI.GP, file = "../../data cleaned/data_positiveILI_GP_perrine_feb2017.RData")
+save(dat.posILI.NPFS, file = "../../data cleaned/data_positiveILI_NPFS_perrine_feb2017.RData")
 
 

@@ -6,20 +6,17 @@
 # create model inputs for decision tree: upto service use
 
 
-library(dplyr)
-library(tidyr)
-
 
 # read data
 
-load(file = "../../R/Ilarias-model/H1N1model/data cleaned/ILI_2009_2011_long.RData")
-load(file = "../../R/Ilarias-model/H1N1model/data cleaned/H1N1_long.RData")
-load(file = "../../R/Ilarias-model/H1N1model/data cleaned/ILI_diag_long.RData")
-load(file = "../../R/NPFS_access-auth-coll/data cleaned/dat.npfs.RData")
-load(file = "../../R/user-survey/data cleaned/usersurvey.RData")
+load(file = "../../R/data-analysis/Ilarias-model/H1N1model/data cleaned/ILI_2009_2011_long.RData")
+load(file = "../../R/data-analysis/Ilarias-model/H1N1model/data cleaned/H1N1_long.RData")
+load(file = "../../R/data-analysis/Ilarias-model/H1N1model/data cleaned/ILI_diag_long.RData")
+load(file = "../../R/data-analysis/NPFS_access-auth-coll/data cleaned/dat.npfs.RData")
+load(file = "../../R/data-analysis/user-survey/data cleaned/usersurvey.RData")
 load(file = "../../data cleaned/data_positiveILI_GP_perrine_feb2017.RData")
 load(file = "../../data cleaned/data_positiveILI_NPFS_perrine_feb2017.RData")
-load(file = "../../R/Ilarias-model/H1N1model/data/pop_age.RData")
+load(file = "../../R/data-analysis/Ilarias-model/H1N1model/data/pop_age.RData")
 
 
 ageGroups <- c("04", "514", "1524", "2544", "4564", "65.")

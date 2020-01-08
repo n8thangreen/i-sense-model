@@ -18,7 +18,7 @@ INMB <- function(QALYgain,
 }
 
 
-#' maxCost
+#' Calculate Maximum Cost
 #'
 #' @param interv
 #' @param status_quo

@@ -6,9 +6,6 @@
 # cost-effectiveness scenarios
 
 
-library(magrittr)
-
-
 spec.seq  <- seq(0, 1, 0.1)#0.05)
 sens.seq  <- seq(0, 1, 0.1)#0.05)
 c_test.seq <- seq(0, 25, 1)#0.5)

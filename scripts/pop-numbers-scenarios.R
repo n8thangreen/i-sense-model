@@ -6,9 +6,6 @@
 # population counts for each scenario
 
 
-library(magrittr)
-
-
 SPEC <- 0.96
 SENS <- 0.73
 

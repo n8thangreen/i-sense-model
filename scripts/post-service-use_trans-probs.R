@@ -6,11 +6,7 @@
 # create model inputs for decision tree: after service use
 
 
-library(reshape2)
-
-
-load("../../R/Ilarias-model/H1N1model/data/dates_lookup.RData")
-
+load("../../R/data-analysis/Ilarias-model/H1N1model/data/dates_lookup.RData")
 
 
 # duplicate first NPFS week for missing pre-NPFS weeks --------------------
@@ -19,7 +15,13 @@ dat.npfs <-
   dat.npfs %>%
   filter(week == min(week)) %>%
   data.frame(weektemp = rep(FIRST_WEEK:29, each = length(ageGroups) + 1)) %>%
-  select(-weeks_window, -NPFS_weeks_window, -NPFS_weeks, -week_start, -week, -week_end, -epiweek) %>%
+  select(-weeks_window,
+         -NPFS_weeks_window,
+         -NPFS_weeks,
+         -week_start,
+         -week,
+         -week_end,
+         -epiweek) %>%
   rename(week = weektemp) %>%
   merge(dates_lookup) %>%
   rbind.data.frame(dat.npfs)
@@ -95,7 +97,7 @@ num_dat_hosp <-
              lowrisk  = c(0.048, 0.0056, 0.0115, 0.0115, 0.0115, 0.0244),
              highrisk = c(0.2144, 0.0671, 0.0632, 0.0632, 0.0632, 0.3248)) %>%
   mutate(ILI.hosp = (lowrisk*9 + highrisk)/10,
-         hosp.death = 0.030,
+         hosp.death = 0.03,
          complete.hosp = ILI.hosp*completeTx.adj) %>%
   slice(rep(1:n(), each = 3)) %>%
   mutate(NPFS_weeks_window = rep(1:3, times = n()/3)) %>%
