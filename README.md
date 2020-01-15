@@ -33,4 +33,6 @@ The key steps of the analysis pipeline are:
 
 ## Outputs
 
-The final report is [here](docs/finalreport.pdf).
+The final report is [here](docs/finalreport.pdf). Presentation slides
+are [here](docs/06042017-isense_HE-seminar-slides_NGreen.pdf) and
+[here](docs/i-sense%20meeting%2014%20June%202017%20-%20Green.pdf).
